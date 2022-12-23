@@ -14,13 +14,22 @@ public:
     char* get_command() override;
 };
 
+
 class GetArrivals : public Command{
+private:
+    char* targetStation; // trains that arrive in a targetStation
+    unsigned int fromHour; // from given hour (request time if not provided)
+    unsigned int toHour = 3600; // to given hour (1h default if not provided)
+    char* getArrivalsCommand = "GET ARRIVALS";
+    size_t sizeCommand = 12;
 public:
-    GetArrivals(char* command, int sd) : Command(command, sd) {};
+    GetArrivals(char* command, int sd);
     GetArrivals() = default;
+    ~GetArrivals();
     struct CommandResult execute_command() override;
     char* get_command() override;
 };
+
 
 class GetDepartures : public Command{
 public:
@@ -30,6 +39,7 @@ public:
     char* get_command() override;
 };
 
+
 class CreateNewRoute : public Command{
 public:
     CreateNewRoute(char* command, int sd) : Command(command, sd) {};
@@ -38,6 +48,7 @@ public:
     char* get_command() override;
 };
 
+
 class ExitCommand : public Command{
 public:
     ExitCommand(char* command, int sd) : Command(command, sd) {};
@@ -45,6 +56,7 @@ public:
     struct CommandResult execute_command() override;
     char* get_command() override;
 };
+
 
 class UnRecognizedCommand : public Command{
 public:

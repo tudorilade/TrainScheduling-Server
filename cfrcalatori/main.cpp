@@ -4,6 +4,8 @@
 #include <QTextStream>
 #include <string.h>
 #include "main.h"
+#include "XmlController/xmlcontrollerr.h"
+#include "CommandControl/CommandControl/commands.h"
 using namespace std;
 
 #include <QApplication>
@@ -18,43 +20,11 @@ using namespace std;
 */
 int main(int argc, char *argv[])
 {
-        QDomDocument studentsXML;
-        cout << QFile::exists("/home/tudor/proiecte/repocfr/cfrcalatori/data/sample_data.xml") << endl;
+    XmlController xmlFile;
+    vector<TrainData>arrivalsInfo;
+    Command* getArrivals = new GetArrivals("GET ARRIVALS -station Bucuresti Nord -fromHour 10:23 -toHour 12:32", 1);
 
-        QFile xmlFile("/home/tudor/proiecte/repocfr/cfrcalatori/data/sample_data.xml");
-        if (!xmlFile.open(QIODevice::ReadOnly))
-        {
-            perror("what is the error???   ");
-            return 0;
-        }
-        studentsXML.setContent(&xmlFile);
-        xmlFile.close();
-
-        QDomElement root = studentsXML.documentElement();
-        QDomElement trenuriNode = root.firstChild().firstChild().firstChild().firstChild().toElement();
-        QDomElement trase, elementTrasa;
-        while(!trenuriNode.isNull())
-        {
-            cout << "Next " << trenuriNode.tagName().toStdString() << " ";
-            cout << trenuriNode.attribute("CategorieTren").toStdString() << trenuriNode.attribute("Numar").toStdString() << endl;
-            trase = trenuriNode.firstChild().toElement();
-            while(!(trase.isNull()))
-            {
-                if("Trase" == trase.tagName().toStdString())
-                {
-                    elementTrasa = trenuriNode.firstChild().firstChild().firstChild().toElement();
-                    while(!elementTrasa.isNull())
-                    {
-                       cout << elementTrasa.attribute("DenStaOrigine").toStdString() << endl;
-                       elementTrasa = elementTrasa.nextSibling().toElement();
-
-                    }
-
-                }
-                trase = trase.nextSibling().toElement();
-            }
-            trenuriNode = trenuriNode.nextSibling().toElement();
-        }
+    xmlFile.getArrivalsInfo(arrivalsInfo, getArrivals);
 
     MainManager app;
     cout << "pornim serverul" << endl;

@@ -30,6 +30,8 @@ set(PROJECT_SOURCES
         CommandControl/CommandControl/command_ABC.h
         CommandControl/CommandControl/command_factory.cpp
         CommandControl/CommandControl/command_factory.h
+        XmlController/xmlcontrollerr.h
+        XmlController/xmlcontrollerr.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
