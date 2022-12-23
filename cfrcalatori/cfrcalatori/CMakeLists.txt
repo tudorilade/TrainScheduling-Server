@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.23)
+project(cfrcalatori)
+
+set(CMAKE_CXX_STANDARD 17)
+
+add_executable(cfrcalatori main.cpp ClientController/client_controller.h main.h ClientThreadFactory/thread_factory.cpp ClientThreadFactory/thread_factory.h ClientController/client_controller.cpp Requests/RequestsController/requests_controller.cpp Requests/RequestsController/requests_controller.h CommandControl/CommandControlManager/command_control_manager.cpp CommandControl/CommandControlManager/command_control_manager.h CommandControl/CommandControl/commands.cpp CommandControl/CommandControl/commands.h CommandControl/CommandControl/command_ABC.h CommandControl/CommandControl/command_factory.cpp CommandControl/CommandControl/command_factory.h)
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(cfrcalatori PRIVATE Threads::Threads)

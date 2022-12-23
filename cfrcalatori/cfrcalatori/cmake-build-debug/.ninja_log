@@ -1,0 +1,13 @@
+# ninja log v5
+1	287	1669933298951391540	CMakeFiles/cfrcalatori.dir/RequestsController/requests_controller.cpp.o	a603a7334771b573
+1	351	1670185251082601823	CMakeFiles/cfrcalatori.dir/CommandControl/CommandControl/commands.cpp.o	5a9549cfe5c764d4
+1	377	1670102417698137335	CMakeFiles/cfrcalatori.dir/Requests/RequestsController/requests_controller.cpp.o	881699ed899ee366
+1	35	1670063380719792961	CMakeFiles/cfrcalatori.dir/ClientThreadFactory/thread_factory.cpp.o	4b3eb5e166b9cc63
+0	18	1671712110845269119	build.ninja	2157d754af83f7dc
+1	118	1670185250850600007	CMakeFiles/cfrcalatori.dir/main.cpp.o	388d67cb9b01d171
+352	419	1670185251150602355	cfrcalatori	96e78a79fd0cb6be
+1	117	1670185250850600007	CMakeFiles/cfrcalatori.dir/ClientController/client_controller.cpp.o	4d8a51e720e3b34d
+1	12	1669984754673431447	CMakeFiles/cfrcalatori.dir/CommandControl/CommandControlFactory/command_control_factory.cpp.o	f54cdfe2384af179
+0	35	1669982310075616061	CMakeFiles/cfrcalatori.dir/Client/client.c.o	fb47e15b51bcd6fe
+1	429	1670102606919820068	CMakeFiles/cfrcalatori.dir/CommandControl/CommandControlManager/command_control_manager.cpp.o	fd349471e7f8c618
+1	352	1670185251082601823	CMakeFiles/cfrcalatori.dir/CommandControl/CommandControl/command_factory.cpp.o	4bb09bc892098b2f
