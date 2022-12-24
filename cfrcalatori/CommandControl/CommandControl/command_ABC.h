@@ -22,12 +22,21 @@ private:
     string numeTren;
     string statieCurenta;
     string statieDestinatie;
+    string finalDestination;
     unsigned int intarziere;
     unsigned int timpStationare;
     unsigned int timpSosire;
     unsigned int timpPlecare;
+    unsigned int timpSosireFinal;
+    unsigned int delayFinal;
 
 public:
+    TrainData(
+            string, string, string,string, unsigned int, unsigned int,
+            unsigned int, unsigned int, unsigned int, unsigned int
+    );
+    TrainData() = default;
+    ~TrainData() = default;
     string toString();
     string convertFromSeconds();
 };

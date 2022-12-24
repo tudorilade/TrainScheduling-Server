@@ -33,7 +33,7 @@ public:
     XmlController(char*);
     ~XmlController();
     void getArrivalsInfo(vector<TrainData>&arrivalsInfo, GetRequests* = nullptr);
-    void getDeparturesInfo(vector<TrainData>&arrivalsInfo, GetRequests* = nullptr);
+    void getDeparturesInfo(vector<TrainData>&departuresInfo, GetRequests* = nullptr);
     void updateTrainInfo(Command* = nullptr);
     void createTrainInfo(Command* = nullptr);
 };

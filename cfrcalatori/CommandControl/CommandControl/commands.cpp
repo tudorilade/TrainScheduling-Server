@@ -109,8 +109,8 @@ GetRequests::GetRequests(char* command, int sd) : Command(command, sd)
         free(flag); free(arg);
     }
 
-    if(this->fromHour && !this->toHourFlag)
-        this->toHour = (this->toHour + this->fromHour) % 3600;
+    if(this->fromHourFlag && !this->toHourFlag)
+        this->toHour = (this->fromHour + 3600) % 86400;
 
 
     if(this->fromHour > 86340 || this->toHour > 86340)
@@ -121,7 +121,7 @@ GetRequests::GetRequests(char* command, int sd) : Command(command, sd)
 GetRequests::~GetRequests()
 {
     this->fromHour = 0;
-    this->toHour = 3600;
+    this->toHour = 0;
     this->targetStation = ""; this->sizeStation =  0;
 }
 
@@ -173,7 +173,33 @@ size_t GetRequests::getSizeStationName()
 TrainData GetRequests::toTrainData(QDomElement elementTrasa)
 {
     /* converts a DomElement to TrainData class given the details within Command */
+    TrainData infoAboutATrain;
+    QDomElement trenNode = elementTrasa.parentNode().parentNode().parentNode().toElement();
 
+    string trainName = trenNode.attribute("CategorieTren").toStdString() + trenNode.attribute("Numar").toStdString();
+    string stationC = elementTrasa.attribute("DenStaOrigine").toStdString();
+    string nextStation = elementTrasa.attribute("DenStaDestinatie").toStdString();
+    unsigned int delay = elementTrasa.attribute("Ajustari").toInt();
+    unsigned int timpStationare = elementTrasa.attribute("StationareSecunde").toInt();
+    unsigned int timpPlecare = elementTrasa.attribute("OraP").toInt() - timpStationare;
+    unsigned int timpSosireNextStation = elementTrasa.attribute("OraS").toInt();
+
+    while(!elementTrasa.nextSibling().toElement().isNull() && (elementTrasa.nextSibling().toElement().tagName() == "ElementTrasa"))
+    {
+        elementTrasa = elementTrasa.nextSibling().toElement();
+    }
+
+    bool s = elementTrasa.isNull();
+
+    string finalDestination = elementTrasa.attribute("DenStaOrigine").toStdString();
+    unsigned int timpSosireFinal = elementTrasa.attribute("OraP").toInt();
+    unsigned int delayFinal = elementTrasa.attribute("Ajustari").toInt();
+
+    return TrainData{
+            trainName, stationC, nextStation, finalDestination,
+            delay, timpStationare, timpPlecare, timpSosireNextStation,
+            timpSosireFinal, delayFinal
+    };
 }
 
 bool GetRequests::isElementValid(QDomElement elementTrasa)
@@ -182,8 +208,45 @@ bool GetRequests::isElementValid(QDomElement elementTrasa)
      * returns true if trasa element corresponds to command arguments
      * flase otherwise
     */
+    if(!(elementTrasa.attribute("DenStaOrigine").toStdString() == this->targetStation))
+        return false;
 
-    return false;
+    unsigned int OraP = elementTrasa.attribute("OraP").toInt();
+    unsigned int timpStationare = elementTrasa.attribute("StationareSecunde").toInt();
+    unsigned int oraSosireStatie = OraP - timpStationare;
+
+    if(this->fromHourFlag && this->toHourFlag)
+    {
+        if(this->fromHour <= this->toHour){
+            if(!(oraSosireStatie >= this->fromHour && oraSosireStatie <= this->toHour ))
+            {
+                return false;
+            }
+        }
+        else if(!(oraSosireStatie >= this->fromHour || oraSosireStatie <= this->toHour))
+        {
+            return false;
+        }
+
+    }
+
+    if(this->fromHourFlag && !this->toHourFlag)
+    {
+        if(!(oraSosireStatie >= this->fromHour))
+        {
+            return false;
+        }
+    }
+
+    if(this->toHourFlag && !this->fromHourFlag)
+    {
+        if(oraSosireStatie >= this->toHour)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 
@@ -271,4 +334,24 @@ struct CommandResult UnRecognizedCommand::execute_command() {
     res.result.assign("0");
     res.size_result = 1;
     return res;
+}
+
+
+TrainData::TrainData(
+        string name, string stationC, string stationD, string stationF,
+        unsigned int delay, unsigned int stationTime, unsigned int arrivalTime,
+        unsigned int departureTime, unsigned int arrivalTimeF, unsigned int delayF
+)
+{
+
+    this->numeTren = name;
+    this->statieCurenta = stationC;
+    this->statieDestinatie = stationD;
+    this->finalDestination = stationF;
+    this->intarziere = delay;
+    this->timpStationare = stationTime;
+    this->timpSosire = arrivalTime;
+    this->timpPlecare = departureTime;
+    this->timpSosireFinal = arrivalTimeF;
+    this->delayFinal = delayF;
 }

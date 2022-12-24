@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 {
     XmlController xmlFile;
     vector<TrainData>arrivalsInfo;
-    GetRequests* getArrivals = new GetArrivals("ARRIVALS -station Tg. Jiu -fromHour 06:30 -toHour 11:30", 1);
+    GetRequests* getArrivals = new GetArrivals("ARRIVALS -station Amaradia -fromHour 22:10 -toHour 15:32", 1);
     GetRequests* getDepartures = new GetDepartures("DEPARTURES -station sadasdas Nord -fromHour 12:40", 1);
 
     xmlFile.getArrivalsInfo(arrivalsInfo, getArrivals);

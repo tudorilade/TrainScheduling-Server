@@ -20,7 +20,7 @@ class GetRequests : public Command
 protected:
     string targetStation; // trains that arrive in a targetStation
     unsigned int fromHour = 0; // from given hour (request time if not provided)
-    unsigned int toHour = 3600; // to given hour (1h default if not provided)
+    unsigned int toHour = 86340; // to given hour (until end of the day if not provided: 23:59)
     string getCommand;
     size_t sizeCommand = 12;
     size_t sizeStation = 0;
