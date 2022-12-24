@@ -6,28 +6,34 @@
 #include "commands.h"
 using namespace std;
 
-/* UPDATE Command*/
-struct CommandResult UpdateTrain::execute_command(){
-    cout << "Se execute comanda: Update train route" << endl;
-    return test_res;
-}
 
-char*  UpdateTrain::get_command() {
-    return this->command;
-}
-
-
-
-
-/* GET ARRIVALS Command */
-GetArrivals::GetArrivals(char* command, int sd) : Command(command, sd)
+/* GET Commands - interprets the parsed command */
+GetRequests::GetRequests(char* command, int sd) : Command(command, sd)
 {
+    int i = 0, j = 0, k = 0;
+    while(command[i] == ' '){i++;};
+    j = i;
+    while(command[j] != '-')
+    {
+        if(command[j] == '\0')
+        {
+            // case when input is just "ARRIVALS", or any string
+            this->incorectCommand = true;
+            break;
+        }
+        j++;
+    }
+
+    this->sizeCommand = (size_t)(j - i - 1);
+    this->getCommand.assign(command, i, this->sizeCommand);
+
     bool end = false;
     char* flag;
     char* arg;
-    int j = 0;
-    for(int i = this->sizeCommand; command[i] != '\0'; i++)
+
+    for(i = j; command[i] != '\0'; i++)
     {
+        j = 0; k = 0;
         while(command[i] == ' ')
         {
             // remove blank spaces
@@ -40,103 +46,229 @@ GetArrivals::GetArrivals(char* command, int sd) : Command(command, sd)
         }
         if(end){break;}
 
-        for(j = i; command[i] != ' ';j++); // get the length of the flag
+        for(j = i; command[j] != ' '; j++); // get the length of the flag
 
         flag = (char*)malloc(j-i+1); // allocate memory of it
 
         strncpy(flag, command + i, j-i+1); // check the flag
         flag[j-i] = '\0';
 
-        while(command[j++] == ' '); // remove blank spaces
-
         i = j; j = 0;
-        while(command[i] != ' ')
+        while(true)
         {
-            j++;
-            i++;
+            /* Case when station is formed of multiple words (e.g. Bucuresti Nord) */
+            if(command[i] != '-' && command[i] != '\0')
+            {
+                i++; j++;
+            }
+            else if(command[i] == '\0' || command[i] == '-')
+            {
+                j--;
+                i--;
+                k = i;
+                while(command[k]==' ')
+                {
+                    k--;
+                    j--;
+                };
+                break;
+            }
         }
+
         arg = (char*)malloc(j+1);
-        strncpy(arg, command + i - j, j);
+        strncpy(arg, command + k - j + 1, j);
         arg[j] = '\0';
 
-        if(strcmp(flag, "-station") != 0)
+        if(strcmp(flag, "-station") == 0)
         {
-            strncpy(this->targetStation, arg, j);
+            this->sizeStation = (size_t)j;
+            this->targetStation.assign(arg, this->sizeStation);
         }
-        else if(strcmp(flag, "-toHour") != 0)
+        else
         {
-            // ar trebui sa luam ora de genu 00-24, apoi minute: 0-60
-            // alg:
-            // 3600 * h + 60 * m - nr secunde
+            k = 0;
+            while(arg[k] != ':'){++k;}
+            char* hour = (char*)malloc(4);
+            char* min = (char*)malloc(4);
+            strncpy(hour, arg, k);
+            hour[k] = '\0';
+            strncpy(min, arg + k + 1, strlen(arg) - k);
+            hour[strlen(arg) - k] = '\0';
+            if(strcmp(flag, "-toHour") == 0)
+            {
+                this->toHour = atoi(hour) * 3600 + atoi(min) * 60;
+                this->toHourFlag = true;
+            }
+            else if(strcmp(flag, "-fromHour") == 0)
+            {
+                this->fromHour = atoi(hour) * 3600 + atoi(min) * 60;
+                this->fromHourFlag = true;
+            }
+            free(hour); free(min);
         }
-        else if(strcmp(flag, "-fromHour") != 0)
-        {
-            // ar trebui sa luam ora de genu 00-24, apoi minute: 0-60
-            // alg:
-            // 3600 * h + 60 * m - nr secunde
-        }
-
+        free(flag); free(arg);
     }
+
+    if(this->fromHour && !this->toHourFlag)
+        this->toHour = (this->toHour + this->fromHour) % 3600;
+
+
+    if(this->fromHour > 86340 || this->toHour > 86340)
+        this->incorectHourArguments = true;
 }
 
 
-GetArrivals::~GetArrivals()
+GetRequests::~GetRequests()
 {
+    this->fromHour = 0;
+    this->toHour = 3600;
+    this->targetStation = ""; this->sizeStation =  0;
+}
+
+bool GetRequests::isCommandIncorrect()
+{
+    return this->incorectCommand;
+}
+
+bool GetRequests::hasFomHourFlag()
+{
+    return this->fromHourFlag;
+}
+
+bool GetRequests::hasToHourFlag()
+{
+    return this->toHourFlag;
+}
+
+bool GetRequests::hasIncorectArugments()
+{
+    return this->incorectHourArguments;
+}
+
+string GetRequests::getStationName()
+{
+    return this->targetStation;
+}
+
+unsigned int GetRequests::getFromHour()
+{
+    return this->fromHour;
+}
+
+unsigned int GetRequests::getToHour()
+{
+    return this->toHour;
+}
+
+size_t GetRequests::getSizeCommand()
+{
+    return this->sizeCommand;
+}
+
+size_t GetRequests::getSizeStationName()
+{
+    return this->sizeStation;
+}
+
+TrainData GetRequests::toTrainData(QDomElement elementTrasa)
+{
+    /* converts a DomElement to TrainData class given the details within Command */
 
 }
 
+bool GetRequests::isElementValid(QDomElement elementTrasa)
+{
+    /*
+     * returns true if trasa element corresponds to command arguments
+     * flase otherwise
+    */
+
+    return false;
+}
+
+
+/* GET ARRIVALS Command */
+GetArrivals::GetArrivals(char* command, int sd) : GetRequests(command, sd) {
+    if(!((this->getCommand.compare("ARRIVALS") != 0) || (this->getCommand.compare("DEPARTURES") != 0)))
+        this->incorectCommand = true;
+    else if(this->incorectHourArguments)
+        this->incorectCommand = true;
+};
+
+GetArrivals::~GetArrivals() = default;
 
 struct CommandResult GetArrivals::execute_command(){
     cout << "Se execute comanda: Get Arrivals" << endl;
     return test_res;
 }
 
-char*  GetArrivals::get_command() {
-    return this->command;
+string  GetArrivals::get_command() {
+    return this->command_t;
 }
 
 
 
 /* GET DEPARTURES */
+
+GetDepartures::GetDepartures(char* command, int sd) : GetRequests(command, sd)
+{
+    if(!((this->getCommand.compare("ARRIVALS") != 0) || (this->getCommand.compare( "DEPARTURES") != 0)))
+        this->incorectCommand = true;
+    else if(this->incorectHourArguments)
+        this->incorectCommand = true;
+}
+
 struct CommandResult GetDepartures::execute_command(){
     cout << "Se execute comanda: Get Departures Arrivals" << endl;
     return test_res;
 }
 
-char*  GetDepartures::get_command() {
-    return this->command;
+string  GetDepartures::get_command() {
+    return this->command_t;
 }
+
+
+/* UPDATE Command*/
+struct CommandResult UpdateTrain::execute_command(){
+    cout << "Se execute comanda: Update train route" << endl;
+    return test_res;
+}
+
+string  UpdateTrain::get_command() {
+    return this->command_t;
+}
+
 
 struct CommandResult CreateNewRoute::execute_command(){
     cout << "Se execute comanda: Create new Route" << endl;
     return test_res;
 }
 
-char*  CreateNewRoute::get_command() {
-    return this->command;
+string  CreateNewRoute::get_command() {
+    return this->command_t;
 }
 
 
 struct CommandResult ExitCommand::execute_command(){
     cout << "Se execute comanda: Exit connection" << endl;
-    strcpy(test_res.result, "EXIT");
+    test_res.result.assign("EXIT");
     test_res.size_result = 4;
     test_res.result[4] = '\0';
     return test_res;
 }
 
-char*  ExitCommand::get_command() {
-    return this->command;
+string  ExitCommand::get_command() {
+    return this->command_t;
 }
 
-char*  UnRecognizedCommand::get_command() {
-    return this->command;
+string  UnRecognizedCommand::get_command() {
+    return this->command_t;
 }
 
 struct CommandResult UnRecognizedCommand::execute_command() {
     struct CommandResult res {};
     res.result = reinterpret_cast<char*>(malloc(1));
-    strcpy(res.result, "0");
+    res.result.assign("0");
     res.size_result = 1;
     return res;
 }

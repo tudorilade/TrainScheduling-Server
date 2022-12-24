@@ -50,9 +50,8 @@ XmlController::~XmlController()
     this->opened = false;
 }
 
-void XmlController::getArrivalsInfo(vector<TrainData>&arrivalsInfo, Command* command)
+void XmlController::getArrivalsInfo(vector<TrainData>&arrivalsInfo, GetRequests* command)
 {
-    TrainData traininfo;
     QDomElement startTrenuriNode = trenuriNode;
     QDomElement trase, elementTrasa;
     while(!startTrenuriNode.isNull())
@@ -67,7 +66,10 @@ void XmlController::getArrivalsInfo(vector<TrainData>&arrivalsInfo, Command* com
                 elementTrasa = startTrenuriNode.firstChild().firstChild().firstChild().toElement();
                 while(!elementTrasa.isNull())
                 {
-                   cout << elementTrasa.attribute("DenStaOrigine").toStdString() << endl;
+                   if(command->isElementValid(elementTrasa))
+                   {
+                       arrivalsInfo.emplace_back(command->toTrainData(elementTrasa));
+                   }
                    elementTrasa = elementTrasa.nextSibling().toElement();
 
                 }

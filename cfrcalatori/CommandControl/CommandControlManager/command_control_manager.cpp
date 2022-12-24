@@ -55,19 +55,19 @@ void CommandManager::executeCommands(Command * command) {
 
     struct CommandResult res = command->execute_command();
     char *out_msg = static_cast<char *>(malloc(38 + command->get_size_command()));
-    char* com = command->get_command();
+    string com = command->get_command();
     strcpy(out_msg, "Comanda ");
-    strcat(out_msg, com);
-    if(strcmp(res.result, "0") == 0)
+    strcat(out_msg, com.c_str());
+    if(res.result.compare("0") == 0)
         strcat(out_msg, "nu a fost gasita\n");
     else
         strcat(out_msg, "a fost executata cu succes !\n");
 
     RequestsController::send_message(command->get_client_sd(), out_msg);
-    if(strcmp(res.result, "EXIT") == 0){
+    if(res.result.compare("EXIT") == 0){
         running = false;
     }
 
-    free(out_msg); free(com);
+    free(out_msg); com = "";
 
 }

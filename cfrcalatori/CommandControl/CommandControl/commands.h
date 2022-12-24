@@ -11,32 +11,53 @@ class UpdateTrain : public Command{
 public:
     UpdateTrain(char* command, int sd): Command(command, sd) {};
     struct CommandResult execute_command() override;
-    char* get_command() override;
+    string get_command() override;
 };
 
 
-class GetArrivals : public Command{
-private:
-    char* targetStation; // trains that arrive in a targetStation
-    unsigned int fromHour; // from given hour (request time if not provided)
+class GetRequests : public Command
+{
+protected:
+    string targetStation; // trains that arrive in a targetStation
+    unsigned int fromHour = 0; // from given hour (request time if not provided)
     unsigned int toHour = 3600; // to given hour (1h default if not provided)
-    char* getArrivalsCommand = "GET ARRIVALS";
+    string getCommand;
     size_t sizeCommand = 12;
+    size_t sizeStation = 0;
+    bool fromHourFlag = false, toHourFlag = false, incorectHourArguments = false, incorectCommand = false;
 public:
-    GetArrivals(char* command, int sd);
+    GetRequests(char* command, int sd);
+    GetRequests() = default;
+    ~GetRequests();
+    string getStationName();
+    unsigned int getFromHour();
+    unsigned int getToHour();
+    size_t getSizeCommand();
+    size_t getSizeStationName();
+    bool hasFomHourFlag();
+    bool hasToHourFlag();
+    bool hasIncorectArugments();
+    bool isCommandIncorrect();
+    TrainData toTrainData(QDomElement);
+    bool isElementValid(QDomElement);
+};
+
+class GetArrivals : public GetRequests{
+public:
+    GetArrivals(char*, int);
     GetArrivals() = default;
     ~GetArrivals();
     struct CommandResult execute_command() override;
-    char* get_command() override;
+    string get_command() override;
 };
 
 
-class GetDepartures : public Command{
+class GetDepartures : public GetRequests{
 public:
-    GetDepartures(char* command, int sd) : Command(command, sd) {};
+    GetDepartures(char*, int);
     GetDepartures() = default;
     struct CommandResult execute_command() override;
-    char* get_command() override;
+    string get_command() override;
 };
 
 
@@ -45,7 +66,7 @@ public:
     CreateNewRoute(char* command, int sd) : Command(command, sd) {};
     CreateNewRoute() = default;
     struct CommandResult execute_command() override;
-    char* get_command() override;
+    string get_command() override;
 };
 
 
@@ -54,7 +75,7 @@ public:
     ExitCommand(char* command, int sd) : Command(command, sd) {};
     ExitCommand() = default;
     struct CommandResult execute_command() override;
-    char* get_command() override;
+    string get_command() override;
 };
 
 
@@ -63,7 +84,7 @@ public:
     UnRecognizedCommand(char* command, int sd) : Command(command, sd) {};
     UnRecognizedCommand() = default;
     struct CommandResult execute_command() override;
-    char* get_command() override;
+    string get_command() override;
 };
 
 
