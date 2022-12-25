@@ -20,24 +20,36 @@ class TrainData
 */
 private:
     string numeTren;
-    string statieCurenta;
-    string statieDestinatie;
-    string finalDestination;
-    unsigned int intarziere;
-    unsigned int timpStationare;
-    unsigned int timpSosire;
-    unsigned int timpPlecare;
-    unsigned int timpSosireFinal;
-    unsigned int delayFinal;
+    string statieP; // arrival/departure station
+    string statieN; // next station
+    string statieD; // destination. Last station if not provided
+    unsigned int intarziereP; // delay arrival/departure
+    unsigned int intarziereD; // delay at final destination
+    unsigned int intarziereN; // delay at next station
+    unsigned int timpStationareP; // station time at arrival/departure station
+    unsigned int timpStationareD; // station time at final destination station
+    unsigned int timpStationareN; // station time at next station
+    unsigned int timpSosireP; // arrival time at stationP
+    unsigned int timpSosireD; // arrival time at stattionD
+    unsigned int timpSosireN; // arrival time at next station
+    unsigned int timpPlecareP; // departure time at stationP
+    unsigned int timpPlecareD; // departure time at stationD
+    unsigned int timpPlecareN; // departure time at next station
+    bool valid = true; // when statieD provided and we found same statieP but with different statieD than provided
 
 public:
     TrainData(
             string, string, string,string, unsigned int, unsigned int,
-            unsigned int, unsigned int, unsigned int, unsigned int
+            unsigned int, unsigned int, unsigned int, unsigned int,
+            unsigned int, unsigned int, unsigned int, unsigned int,
+            unsigned int, unsigned int
     );
+    TrainData(bool);
     TrainData() = default;
     ~TrainData() = default;
+    bool isValid();
     string toString();
+    string toTable();
     string convertFromSeconds();
 };
 

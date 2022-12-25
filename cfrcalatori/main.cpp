@@ -22,10 +22,16 @@ int main(int argc, char *argv[])
 {
     XmlController xmlFile;
     vector<TrainData>arrivalsInfo;
-    GetRequests* getArrivals = new GetArrivals("ARRIVALS -station Amaradia -fromHour 22:10 -toHour 15:32", 1);
+    GetRequests* getArrivals = new GetArrivals("ARRIVALS -stationP Târgu Jiu -stationD Turceni -toHour 12:50 -fromHour 11:13", 1);
     GetRequests* getDepartures = new GetDepartures("DEPARTURES -station sadasdas Nord -fromHour 12:40", 1);
-
-    xmlFile.getArrivalsInfo(arrivalsInfo, getArrivals);
+    if(getArrivals->isCommandCorrect())
+    {
+        xmlFile.getArrivalsInfo(arrivalsInfo, getArrivals);
+    }
+    else
+    {
+        cout << "la pere cu comanda" << endl;
+    }
 
     MainManager app;
     cout << "pornim serverul" << endl;

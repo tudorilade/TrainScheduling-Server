@@ -6,7 +6,41 @@
 #include "commands.h"
 using namespace std;
 
+int checkIfCorrectHourArgument(char* arg)
+{
+    /* check if supplied hour argument is correct
 
+     returns -1 if it is incorrect
+     returns index of ':' if correct
+*/
+    int k = 0, j = 0;
+    while(arg[k] != ':'){if(arg[k] == '\0'){break;};++k;}
+    if(k == strlen(arg))
+        return -1;
+
+    for(j = 0; j < k; j++)
+    {
+        if(!isdigit((int)arg[j]))
+        {
+            return -1;
+        }
+    }
+
+    for(j = k + 1; arg[j] != '\0'; j++)
+    {
+        if(!isdigit((int)arg[j]))
+        {
+            return -1;
+        }
+    }
+    if(strlen(arg) > 5)
+    {
+        return -1; // correct format is HH:MM, which has length of 5.
+    }
+
+    return k;
+
+}
 /* GET Commands - interprets the parsed command */
 GetRequests::GetRequests(char* command, int sd) : Command(command, sd)
 {
@@ -74,20 +108,34 @@ GetRequests::GetRequests(char* command, int sd) : Command(command, sd)
                 break;
             }
         }
-
+        if(j == -1)
+        {
+            // Nu s-a parsat un argument
+            this->incorectCommand = true;
+            break;
+        }
         arg = (char*)malloc(j+1);
         strncpy(arg, command + k - j + 1, j);
         arg[j] = '\0';
 
-        if(strcmp(flag, "-station") == 0)
+        if(strcmp(flag, "-stationP") == 0)
         {
             this->sizeStation = (size_t)j;
             this->targetStation.assign(arg, this->sizeStation);
         }
-        else
+        else if(strcmp(flag, "-stationD") == 0)
         {
-            k = 0;
-            while(arg[k] != ':'){++k;}
+            this->sizeStationD = (size_t)j;
+            this->stationD.assign(arg, this->sizeStationD);
+            this->stationDFlag = true;
+        }
+        else if(strcmp(flag, "-toHour") == 0 || strcmp(flag, "-fromHour") == 0)
+        {
+            if((k = checkIfCorrectHourArgument(arg)) == -1)
+            {
+                this->incorectHourArguments = true;
+                break;
+            }
             char* hour = (char*)malloc(4);
             char* min = (char*)malloc(4);
             strncpy(hour, arg, k);
@@ -105,6 +153,11 @@ GetRequests::GetRequests(char* command, int sd) : Command(command, sd)
                 this->fromHourFlag = true;
             }
             free(hour); free(min);
+        }
+        else
+        {
+            this->incorectCommand = true;
+            break;
         }
         free(flag); free(arg);
     }
@@ -125,9 +178,9 @@ GetRequests::~GetRequests()
     this->targetStation = ""; this->sizeStation =  0;
 }
 
-bool GetRequests::isCommandIncorrect()
+bool GetRequests::isCommandCorrect()
 {
-    return this->incorectCommand;
+    return !this->incorectCommand;
 }
 
 bool GetRequests::hasFomHourFlag()
@@ -175,30 +228,74 @@ TrainData GetRequests::toTrainData(QDomElement elementTrasa)
     /* converts a DomElement to TrainData class given the details within Command */
     TrainData infoAboutATrain;
     QDomElement trenNode = elementTrasa.parentNode().parentNode().parentNode().toElement();
+    string trainName, statieP, statieN, statieD;
+    unsigned int delayP, delayN, delayD, timpStationareP, timpStationareN, timpStationareD;
+    unsigned int timpSosireP, timpSosireD, timpSosireN, timpPlecareP, timpPlecareD, timpPlecareN;
 
-    string trainName = trenNode.attribute("CategorieTren").toStdString() + trenNode.attribute("Numar").toStdString();
-    string stationC = elementTrasa.attribute("DenStaOrigine").toStdString();
-    string nextStation = elementTrasa.attribute("DenStaDestinatie").toStdString();
-    unsigned int delay = elementTrasa.attribute("Ajustari").toInt();
-    unsigned int timpStationare = elementTrasa.attribute("StationareSecunde").toInt();
-    unsigned int timpPlecare = elementTrasa.attribute("OraP").toInt() - timpStationare;
-    unsigned int timpSosireNextStation = elementTrasa.attribute("OraS").toInt();
+    // Train Name
+    trainName = trenNode.attribute("CategorieTren").toStdString() + trenNode.attribute("Numar").toStdString();
 
-    while(!elementTrasa.nextSibling().toElement().isNull() && (elementTrasa.nextSibling().toElement().tagName() == "ElementTrasa"))
+    //current station
+    statieP = elementTrasa.attribute("DenStaOrigine").toStdString();
+    delayP = elementTrasa.attribute("Ajustari").toInt();
+    timpStationareP = elementTrasa.attribute("StationareSecunde").toInt();
+    timpSosireP = elementTrasa.attribute("OraP").toInt() - timpStationareP + delayP;
+    timpPlecareP= elementTrasa.attribute("OraP").toInt();
+
+
+    if(!elementTrasa.nextSibling().toElement().isNull() && (elementTrasa.nextSibling().toElement().tagName() == "ElementTrasa"))
     {
+        // next Station
         elementTrasa = elementTrasa.nextSibling().toElement();
+        statieN = elementTrasa.attribute("DenStaOrigine").toStdString();
+        delayN = elementTrasa.attribute("Ajustari").toInt();
+        timpStationareN = elementTrasa.attribute("StationareSecunde").toInt();
+        timpSosireN = elementTrasa.attribute("OraP").toInt() - timpStationareN + delayN;
+        timpPlecareN = elementTrasa.attribute("OraP").toInt();
     }
 
-    bool s = elementTrasa.isNull();
+    if(this->stationDFlag && this->stationD == elementTrasa.attribute("DenStaOrigine").toStdString())
+    {
+        // next Station and Destination Station are the same
+        statieD = elementTrasa.attribute("DenStaOrigine").toStdString();
+        delayD = elementTrasa.attribute("Ajustari").toInt();
+        timpStationareD = elementTrasa.attribute("StationareSecunde").toInt();
+        timpSosireD = elementTrasa.attribute("OraP").toInt() - timpStationareD + delayD;
+        timpPlecareD = elementTrasa.attribute("OraP").toInt();
+    }
+    else
+    {
+        while(!elementTrasa.nextSibling().toElement().isNull() && (elementTrasa.nextSibling().toElement().tagName() == "ElementTrasa"))
+        {
+            if(this->stationDFlag)
+            {
+                // If stationD is provided, it stops there. Otherwise, displays final destination of the route
+                if(elementTrasa.attribute("DenStaOrigine").toStdString() == this->stationD)
+                {
+                    break;
+                }
+            }
+            elementTrasa = elementTrasa.nextSibling().toElement();
+        }
+        statieD = elementTrasa.attribute("DenStaOrigine").toStdString();
+        delayD = elementTrasa.attribute("Ajustari").toInt();
+        timpStationareD = elementTrasa.attribute("StationareSecunde").toInt();
+        timpSosireD = elementTrasa.attribute("OraP").toInt() - timpStationareD + delayD;
+        timpPlecareD = elementTrasa.attribute("OraP").toInt();
+        if(this->stationDFlag)
+        {
+            if(statieD != this->stationD)
+            {
+                return TrainData{false}; // means is invalid
+            }
+        }
+    }
 
-    string finalDestination = elementTrasa.attribute("DenStaOrigine").toStdString();
-    unsigned int timpSosireFinal = elementTrasa.attribute("OraP").toInt();
-    unsigned int delayFinal = elementTrasa.attribute("Ajustari").toInt();
 
     return TrainData{
-            trainName, stationC, nextStation, finalDestination,
-            delay, timpStationare, timpPlecare, timpSosireNextStation,
-            timpSosireFinal, delayFinal
+    trainName, statieP, statieN, statieD, delayP, delayD, delayN, timpStationareP,
+    timpStationareD, timpStationareN, timpSosireP, timpSosireD, timpSosireN, timpPlecareP, timpPlecareD,
+           timpPlecareN
     };
 }
 
@@ -215,35 +312,17 @@ bool GetRequests::isElementValid(QDomElement elementTrasa)
     unsigned int timpStationare = elementTrasa.attribute("StationareSecunde").toInt();
     unsigned int oraSosireStatie = OraP - timpStationare;
 
-    if(this->fromHourFlag && this->toHourFlag)
-    {
-        if(this->fromHour <= this->toHour){
-            if(!(oraSosireStatie >= this->fromHour && oraSosireStatie <= this->toHour ))
-            {
-                return false;
-            }
-        }
-        else if(!(oraSosireStatie >= this->fromHour || oraSosireStatie <= this->toHour))
-        {
-            return false;
-        }
 
-    }
-
-    if(this->fromHourFlag && !this->toHourFlag)
+    if(this->fromHour <= this->toHour)
     {
-        if(!(oraSosireStatie >= this->fromHour))
+        if(!(oraSosireStatie >= this->fromHour && oraSosireStatie <= this->toHour))
         {
             return false;
         }
     }
-
-    if(this->toHourFlag && !this->fromHourFlag)
+    else if(oraSosireStatie > this->toHour && oraSosireStatie < this->fromHour)
     {
-        if(oraSosireStatie >= this->toHour)
-        {
-            return false;
-        }
+        return false;
     }
 
     return true;
@@ -337,21 +416,40 @@ struct CommandResult UnRecognizedCommand::execute_command() {
 }
 
 
+// Train Data
 TrainData::TrainData(
-        string name, string stationC, string stationD, string stationF,
-        unsigned int delay, unsigned int stationTime, unsigned int arrivalTime,
-        unsigned int departureTime, unsigned int arrivalTimeF, unsigned int delayF
+        string numeTren, string statieP, string statieN, string statieD,
+        unsigned int intarziereP, unsigned int intarziereD, unsigned int intarziereN,
+        unsigned int timpStationareP, unsigned int timpStationareD, unsigned int timpStationareN,
+        unsigned int timpSosireP, unsigned int timpSosireD, unsigned int timpSosireN,
+        unsigned int timpPlecareP, unsigned int timpPlecareD, unsigned int timpPlecareN
 )
 {
 
-    this->numeTren = name;
-    this->statieCurenta = stationC;
-    this->statieDestinatie = stationD;
-    this->finalDestination = stationF;
-    this->intarziere = delay;
-    this->timpStationare = stationTime;
-    this->timpSosire = arrivalTime;
-    this->timpPlecare = departureTime;
-    this->timpSosireFinal = arrivalTimeF;
-    this->delayFinal = delayF;
+    this->numeTren = numeTren;
+    this->statieP = statieP;
+    this->statieN = statieN;
+    this->statieD = statieD;
+    this->intarziereP = intarziereP;
+    this->intarziereD = intarziereD;
+    this->intarziereN = intarziereN;
+    this->timpStationareP = timpStationareP;
+    this->timpStationareN = timpStationareN;
+    this->timpStationareD = timpStationareD;
+    this->timpSosireP = timpSosireP;
+    this->timpSosireD = timpSosireD;
+    this->timpSosireN = timpSosireN;
+    this->timpPlecareP = timpPlecareP;
+    this->timpPlecareD = timpPlecareD;
+    this->timpPlecareN = timpPlecareN;
+}
+
+TrainData::TrainData(bool invalid)
+{
+    this->valid = invalid;
+}
+
+bool TrainData::isValid()
+{
+    return this->valid;
 }

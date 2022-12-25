@@ -19,12 +19,14 @@ class GetRequests : public Command
 {
 protected:
     string targetStation; // trains that arrive in a targetStation
+    string stationD; // destination train
     unsigned int fromHour = 0; // from given hour (request time if not provided)
     unsigned int toHour = 86340; // to given hour (until end of the day if not provided: 23:59)
     string getCommand;
     size_t sizeCommand = 12;
     size_t sizeStation = 0;
-    bool fromHourFlag = false, toHourFlag = false, incorectHourArguments = false, incorectCommand = false;
+    size_t sizeStationD = 0;
+    bool fromHourFlag = false, toHourFlag = false, incorectHourArguments = false, incorectCommand = false, stationDFlag = false;
 public:
     GetRequests(char* command, int sd);
     GetRequests() = default;
@@ -37,7 +39,7 @@ public:
     bool hasFomHourFlag();
     bool hasToHourFlag();
     bool hasIncorectArugments();
-    bool isCommandIncorrect();
+    bool isCommandCorrect();
     TrainData toTrainData(QDomElement);
     bool isElementValid(QDomElement);
 };

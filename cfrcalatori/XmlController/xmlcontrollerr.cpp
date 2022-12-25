@@ -56,8 +56,6 @@ void XmlController::getArrivalsInfo(vector<TrainData>&arrivalsInfo, GetRequests*
     QDomElement trase, elementTrasa;
     while(!startTrenuriNode.isNull())
     {
-        cout << "Next " << startTrenuriNode.tagName().toStdString() << " ";
-        cout << startTrenuriNode.attribute("CategorieTren").toStdString() << startTrenuriNode.attribute("Numar").toStdString() << endl;
         trase = startTrenuriNode.firstChild().toElement();
         while(!(trase.isNull()))
         {
@@ -68,17 +66,19 @@ void XmlController::getArrivalsInfo(vector<TrainData>&arrivalsInfo, GetRequests*
                 {
                    if(command->isElementValid(elementTrasa))
                    {
-                       arrivalsInfo.emplace_back(command->toTrainData(elementTrasa));
+                       TrainData infoTrain = command->toTrainData(elementTrasa);
+                       if(infoTrain.isValid())
+                       {
+                        arrivalsInfo.emplace_back(command->toTrainData(elementTrasa));
+                       }
+                       break;
                    }
                    elementTrasa = elementTrasa.nextSibling().toElement();
-
                 }
-
             }
             trase = trase.nextSibling().toElement();
         }
         startTrenuriNode = startTrenuriNode.nextSibling().toElement();
     }
-
 }
 
