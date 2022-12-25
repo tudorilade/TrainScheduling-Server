@@ -9,7 +9,7 @@
 #include <string.h>
 #include <string>
 #include <QtXml>
-
+#include "../../XmlController/xmlcontrollerr.h"
 
 using namespace std;
 
@@ -48,8 +48,7 @@ public:
     TrainData() = default;
     ~TrainData() = default;
     bool isValid();
-    string toString();
-    string toTable();
+    const string toString();
     string convertFromSeconds();
 };
 
@@ -61,7 +60,7 @@ struct CommandResult{
 
 class Command{
 protected:
-    struct CommandResult test_res{};
+    struct CommandResult resultCommand{};
     int sd;
     string command_t;
     size_t size_command;
@@ -71,12 +70,13 @@ public:
         this->size_command = strlen(com);
         this->sd = sd;
         this->command_t.assign(com, this->size_command);
-        test_res.result.assign("Command test", 12);
+        this->resultCommand.result.assign("Command test", 12);
     }
     Command() = default;
-    ~Command(){command_t = ""; sd = 0; size_command = 0; test_res = {};}
+    ~Command(){command_t = ""; sd = 0; size_command = 0; resultCommand = {};}
 
-    virtual struct CommandResult execute_command() = 0;
+    struct CommandResult getResult(){return this->resultCommand;};
+    virtual struct CommandResult execute(XmlController) = 0;
     virtual string get_command() = 0;
     virtual bool isCommandValid() = 0;
     virtual bool isElementValid(QDomElement) = 0;

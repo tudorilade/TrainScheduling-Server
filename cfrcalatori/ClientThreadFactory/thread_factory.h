@@ -25,7 +25,7 @@ protected:
 
 public:
     ThreadFactory() = default;
-    void create_thread(int fd_client);
+    void create_thread(int);
 };
 
 #endif //CFRCALATORI_THREAD_FACTORY_H

@@ -2,6 +2,9 @@
 // Created by tudor on 01.12.2022.
 //
 #include "client_controller.h"
+#include <iostream>
+
+using namespace std;
 
 void ClientController::start_server() {
     printf("Pornim serverul !\n");
@@ -18,6 +21,8 @@ void ClientController::start_server() {
 
     if (bind (sd, (struct sockaddr *) &server, sizeof (struct sockaddr)) == -1)
         throw "[server]Eroare la bind().\n";
+
+    std::cout << "Serverul CFRCalatori a pornit!" << std::endl;
 }
 
 [[noreturn]] void ClientController::manage_clients() {
@@ -32,7 +37,6 @@ void ClientController::start_server() {
             perror ("[server] Eroare la accept().\n");
             continue;
         }
-
         thread_factory.create_thread(client);
     }
 

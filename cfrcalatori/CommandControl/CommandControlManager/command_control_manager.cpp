@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <thread>
+#include <cstring>
 #include "command_control_manager.h"
 #include "../../Requests/RequestsController/requests_controller.h"
 
@@ -16,6 +17,11 @@ CommandManager::~CommandManager() {
         running = false; // shut down RunCommands while loop
         commandThreads.join(); // make sure  we finish to process the ongoing command
     }
+}
+
+CommandManager::CommandManager(XmlController xmlFile)
+{
+    this->xmlFile = xmlFile;
 }
 
 void CommandManager::ManageCommands(){
@@ -53,21 +59,14 @@ void CommandManager::QueueCommands(Command* comm) {
 
 void CommandManager::executeCommands(Command * command) {
 
-    struct CommandResult res = command->execute_command();
-    char *out_msg = static_cast<char *>(malloc(38 + command->get_size_command()));
-    string com = command->get_command();
-    strcpy(out_msg, "Comanda ");
-    strcat(out_msg, com.c_str());
-    if(res.result.compare("0") == 0)
-        strcat(out_msg, "nu a fost gasita\n");
-    else
-        strcat(out_msg, "a fost executata cu succes !\n");
-
+    struct CommandResult res = command->execute(this->xmlFile);
+    char *out_msg = static_cast<char *>(malloc(res.size_result+1));
+    strncpy(out_msg, res.result.c_str(), res.size_result);
     RequestsController::send_message(command->get_client_sd(), out_msg);
     if(res.result.compare("EXIT") == 0){
         running = false;
     }
 
-    free(out_msg); com = "";
+    free(out_msg);
 
 }

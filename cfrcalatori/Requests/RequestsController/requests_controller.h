@@ -15,7 +15,7 @@ private:
 public:
     RequestsController(){
         ERROR_REQUEST = static_cast<char*>(malloc(51));
-        strcpy(ERROR_REQUEST, "Reqestul nu a putut fi procesat. Incercati din nou");
+        strncpy(ERROR_REQUEST, "Reqestul nu a putut fi procesat. Incercati din nou", 51);
         ERROR_REQUEST[51] = '\0';
     };
     ~RequestsController(){
@@ -23,7 +23,7 @@ public:
     };
     void handle_request(void* arg);
     static int send_message(const int&, char*);
-    static int receive_message(const int&, char*);
+    static int receive_message(const int&, char*&);
     int check_close_connection_request(char*);
 };
 

@@ -2,8 +2,7 @@
 #define XMLCONTROLLER_H
 
 #include <iostream>
-#include "../CommandControl/CommandControl/commands.h"
-
+#include <QtXml>
 #define XMLPath "/home/tudor/proiecte/repocfr/cfrcalatori/XmlController/data/sample_data.xml" // it works by providing another absolute path too. this is standard
 
 using namespace std;
@@ -31,10 +30,7 @@ private:
 public:
     XmlController();
     XmlController(char*);
-    ~XmlController();
-    void getTrainsInfo(vector<TrainData>&trainInfoVec, Command* = nullptr);
-    void updateTrainInfo(Command* = nullptr);
-    void createTrainInfo(Command* = nullptr);
+    QDomElement getTrenuriNode();
 };
 
 #endif

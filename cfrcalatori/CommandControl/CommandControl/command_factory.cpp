@@ -7,17 +7,28 @@
 #include <string.h>
 #include <iostream>
 
+
 Command* CommandFactory::create_command(char *command, int sd) {
-    if(strcmp(command, "GET ARRIVALS\n") == 0){
+    string commandS;
+    for(int i = 0; command[i] != '-' && command[i] != '\0'; i++)
+        commandS += command[i];
+
+    int ndxCom = commandS.size();
+    while(commandS[ndxCom--] == ' ');
+
+    commandS.erase(commandS.begin()+ ndxCom, commandS.end());
+
+
+    if(commandS == "ARRIVALS"){
         return new GetArrivals(command, sd);
     }
-    else if(strcmp(command, "GET DEPARTURES\n") == 0){
+    else if(commandS == "DEPARTURES"){
         return new GetDepartures(command, sd);
     }
-    else if(strcmp(command, "CREATE ROUTE\n") == 0){
+    else if(commandS == "CREATE"){
         return new CreateNewRoute(command, sd);
     }
-    else if(strcmp(command, "UPDATE ROUTE\n") == 0){
+    else if(commandS == "UPDATE"){
         return new UpdateTrain(command, sd);
     }
     else if(strcmp(command, "EXIT\n") == 0)

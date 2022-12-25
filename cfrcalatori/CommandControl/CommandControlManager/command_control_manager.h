@@ -11,11 +11,13 @@
 class CommandManager{
 private:
     bool running { false };
+    XmlController xmlFile;
 private:
     std::thread commandThreads;
     std::deque<Command*> queue {};
 public:
     CommandManager() = default;
+    CommandManager(XmlController);
     ~CommandManager();
     void ManageCommands();
     void RunCommands();

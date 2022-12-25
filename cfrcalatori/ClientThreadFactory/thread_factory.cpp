@@ -13,7 +13,6 @@ static void *thread_data_handler(void * arg)
 
     tdL= *((struct thData*)arg);
     pthread_detach(pthread_self());
-
     request_controller.handle_request((struct thData*)arg);
 
     close ((intptr_t)arg);
@@ -23,6 +22,8 @@ static void *thread_data_handler(void * arg)
 void ThreadFactory::create_thread(int client){
     thData* td;
     td=(struct thData*)malloc(sizeof(struct thData));
+    fflush(stdout);
+    fflush(stdout);
     td->idThread=i++;
     td->client=client;
     pthread_create(&th[i], nullptr, &thread_data_handler, td);

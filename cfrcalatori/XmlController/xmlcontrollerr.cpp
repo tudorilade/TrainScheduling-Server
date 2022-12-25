@@ -27,7 +27,7 @@ XmlController::XmlController(char* path)
 
     this->pathSize = strlen(path);
     this->xmlPath = (char*)malloc(this->pathSize);
-    strcpy(this->xmlPath, path);
+    strncpy(this->xmlPath, path, this->pathSize);
     QFile xmlFile(this->xmlPath);
     if (!xmlFile.open(QIODevice::ReadOnly))
     {
@@ -41,43 +41,7 @@ XmlController::XmlController(char* path)
     this->opened = true;
 }
 
-XmlController::~XmlController()
+QDomElement XmlController::getTrenuriNode()
 {
-    free(xmlPath);
-    this->pathSize = 0;
-    this->document.clear();
-    this->trenuriNode.clear();
-    this->opened = false;
-}
-
-void XmlController::getTrainsInfo(vector<TrainData>&trainInfoVec, Command* command)
-{
-    QDomElement startTrenuriNode = trenuriNode;
-    QDomElement trase, elementTrasa;
-    while(!startTrenuriNode.isNull())
-    {
-        trase = startTrenuriNode.firstChild().toElement();
-        while(!(trase.isNull()))
-        {
-            if("Trase" == trase.tagName().toStdString())
-            {
-                elementTrasa = startTrenuriNode.firstChild().firstChild().firstChild().toElement();
-                while(!elementTrasa.isNull())
-                {
-                   if(command->isElementValid(elementTrasa))
-                   {
-                       TrainData infoTrain = command->toTrainData(elementTrasa);
-                       if(infoTrain.isValid())
-                       {
-                        trainInfoVec.emplace_back(command->toTrainData(elementTrasa));
-                       }
-                       break;
-                   }
-                   elementTrasa = elementTrasa.nextSibling().toElement();
-                }
-            }
-            trase = trase.nextSibling().toElement();
-        }
-        startTrenuriNode = startTrenuriNode.nextSibling().toElement();
-    }
+    return this->trenuriNode;
 }
