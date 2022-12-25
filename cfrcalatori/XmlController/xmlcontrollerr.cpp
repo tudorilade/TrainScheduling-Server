@@ -50,7 +50,7 @@ XmlController::~XmlController()
     this->opened = false;
 }
 
-void XmlController::getArrivalsInfo(vector<TrainData>&arrivalsInfo, GetRequests* command)
+void XmlController::getTrainsInfo(vector<TrainData>&trainInfoVec, Command* command)
 {
     QDomElement startTrenuriNode = trenuriNode;
     QDomElement trase, elementTrasa;
@@ -69,7 +69,7 @@ void XmlController::getArrivalsInfo(vector<TrainData>&arrivalsInfo, GetRequests*
                        TrainData infoTrain = command->toTrainData(elementTrasa);
                        if(infoTrain.isValid())
                        {
-                        arrivalsInfo.emplace_back(command->toTrainData(elementTrasa));
+                        trainInfoVec.emplace_back(command->toTrainData(elementTrasa));
                        }
                        break;
                    }
@@ -81,4 +81,3 @@ void XmlController::getArrivalsInfo(vector<TrainData>&arrivalsInfo, GetRequests*
         startTrenuriNode = startTrenuriNode.nextSibling().toElement();
     }
 }
-

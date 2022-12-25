@@ -65,6 +65,7 @@ protected:
     int sd;
     string command_t;
     size_t size_command;
+    bool incorectCommand = false;
 public:
     Command(char* com, int sd){
         this->size_command = strlen(com);
@@ -77,6 +78,9 @@ public:
 
     virtual struct CommandResult execute_command() = 0;
     virtual string get_command() = 0;
+    virtual bool isCommandValid() = 0;
+    virtual bool isElementValid(QDomElement) = 0;
+    virtual TrainData toTrainData(QDomElement) = 0;
     [[nodiscard]] int get_client_sd() const{return this->sd;};
     [[nodiscard]] size_t get_size_command()const{return this->size_command;};
 

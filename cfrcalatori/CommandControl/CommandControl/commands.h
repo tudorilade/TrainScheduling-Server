@@ -12,6 +12,9 @@ public:
     UpdateTrain(char* command, int sd): Command(command, sd) {};
     struct CommandResult execute_command() override;
     string get_command() override;
+    bool isCommandValid() override;
+    TrainData toTrainData(QDomElement) override;
+    bool isElementValid(QDomElement) override;
 };
 
 
@@ -26,7 +29,7 @@ protected:
     size_t sizeCommand = 12;
     size_t sizeStation = 0;
     size_t sizeStationD = 0;
-    bool fromHourFlag = false, toHourFlag = false, incorectHourArguments = false, incorectCommand = false, stationDFlag = false;
+    bool fromHourFlag = false, toHourFlag = false, incorectHourArguments = false, stationDFlag = false;
 public:
     GetRequests(char* command, int sd);
     GetRequests() = default;
@@ -39,9 +42,8 @@ public:
     bool hasFomHourFlag();
     bool hasToHourFlag();
     bool hasIncorectArugments();
-    bool isCommandCorrect();
-    TrainData toTrainData(QDomElement);
-    bool isElementValid(QDomElement);
+    bool isCommandValid() override;
+    TrainData toTrainData(QDomElement) override;
 };
 
 class GetArrivals : public GetRequests{
@@ -51,6 +53,7 @@ public:
     ~GetArrivals();
     struct CommandResult execute_command() override;
     string get_command() override;
+    bool isElementValid(QDomElement) override;
 };
 
 
@@ -60,6 +63,7 @@ public:
     GetDepartures() = default;
     struct CommandResult execute_command() override;
     string get_command() override;
+    bool isElementValid(QDomElement) override;
 };
 
 
@@ -69,6 +73,9 @@ public:
     CreateNewRoute() = default;
     struct CommandResult execute_command() override;
     string get_command() override;
+    bool isCommandValid() override;
+    TrainData toTrainData(QDomElement) override;
+    bool isElementValid(QDomElement) override;
 };
 
 
@@ -78,6 +85,9 @@ public:
     ExitCommand() = default;
     struct CommandResult execute_command() override;
     string get_command() override;
+    bool isCommandValid() override;
+    TrainData toTrainData(QDomElement) override;
+    bool isElementValid(QDomElement) override;
 };
 
 
@@ -87,6 +97,9 @@ public:
     UnRecognizedCommand() = default;
     struct CommandResult execute_command() override;
     string get_command() override;
+    bool isCommandValid() override;
+    TrainData toTrainData(QDomElement) override;
+    bool isElementValid(QDomElement) override;
 };
 
 

@@ -178,7 +178,7 @@ GetRequests::~GetRequests()
     this->targetStation = ""; this->sizeStation =  0;
 }
 
-bool GetRequests::isCommandCorrect()
+bool GetRequests::isCommandValid()
 {
     return !this->incorectCommand;
 }
@@ -299,7 +299,27 @@ TrainData GetRequests::toTrainData(QDomElement elementTrasa)
     };
 }
 
-bool GetRequests::isElementValid(QDomElement elementTrasa)
+
+/* GET ARRIVALS Command */
+GetArrivals::GetArrivals(char* command, int sd) : GetRequests(command, sd) {
+    if(!((this->getCommand.compare("ARRIVALS") != 0) || (this->getCommand.compare("DEPARTURES") != 0)))
+        this->incorectCommand = true;
+    else if(this->incorectHourArguments)
+        this->incorectCommand = true;
+};
+
+GetArrivals::~GetArrivals() = default;
+
+struct CommandResult GetArrivals::execute_command(){
+    cout << "Se execute comanda: Get Arrivals" << endl;
+    return test_res;
+}
+
+string  GetArrivals::get_command() {
+    return this->command_t;
+}
+
+bool GetArrivals::isElementValid(QDomElement elementTrasa)
 {
     /*
      * returns true if trasa element corresponds to command arguments
@@ -329,26 +349,6 @@ bool GetRequests::isElementValid(QDomElement elementTrasa)
 }
 
 
-/* GET ARRIVALS Command */
-GetArrivals::GetArrivals(char* command, int sd) : GetRequests(command, sd) {
-    if(!((this->getCommand.compare("ARRIVALS") != 0) || (this->getCommand.compare("DEPARTURES") != 0)))
-        this->incorectCommand = true;
-    else if(this->incorectHourArguments)
-        this->incorectCommand = true;
-};
-
-GetArrivals::~GetArrivals() = default;
-
-struct CommandResult GetArrivals::execute_command(){
-    cout << "Se execute comanda: Get Arrivals" << endl;
-    return test_res;
-}
-
-string  GetArrivals::get_command() {
-    return this->command_t;
-}
-
-
 
 /* GET DEPARTURES */
 
@@ -369,6 +369,32 @@ string  GetDepartures::get_command() {
     return this->command_t;
 }
 
+bool GetDepartures::isElementValid(QDomElement elementTrasa)
+{
+    /*
+     * returns true if trasa element corresponds to command arguments
+     * flase otherwise
+    */
+    if(!(elementTrasa.attribute("DenStaOrigine").toStdString() == this->targetStation))
+        return false;
+
+    unsigned int OraP = elementTrasa.attribute("OraP").toInt();
+
+    if(this->fromHour <= this->toHour)
+    {
+        if(!(OraP >= this->fromHour && OraP <= this->toHour))
+        {
+            return false;
+        }
+    }
+    else if(OraP > this->toHour && OraP < this->fromHour)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 
 /* UPDATE Command*/
 struct CommandResult UpdateTrain::execute_command(){
@@ -380,7 +406,16 @@ string  UpdateTrain::get_command() {
     return this->command_t;
 }
 
+bool UpdateTrain::isCommandValid()
+{
+    return !this->incorectCommand;
+}
 
+TrainData UpdateTrain::toTrainData(QDomElement){return TrainData{false};}; // dummy override
+bool UpdateTrain::isElementValid(QDomElement){return false;}; // dummy override
+
+
+/* CREATE Command */
 struct CommandResult CreateNewRoute::execute_command(){
     cout << "Se execute comanda: Create new Route" << endl;
     return test_res;
@@ -389,6 +424,14 @@ struct CommandResult CreateNewRoute::execute_command(){
 string  CreateNewRoute::get_command() {
     return this->command_t;
 }
+
+bool CreateNewRoute::isCommandValid()
+{
+    return !this->incorectCommand;
+}
+
+TrainData CreateNewRoute::toTrainData(QDomElement){return TrainData{false};}; // dummy override
+bool CreateNewRoute::isElementValid(QDomElement){return false;}; // dummy override
 
 
 struct CommandResult ExitCommand::execute_command(){
@@ -403,6 +446,15 @@ string  ExitCommand::get_command() {
     return this->command_t;
 }
 
+bool ExitCommand::isCommandValid()
+{
+    return !this->incorectCommand;
+}
+
+TrainData ExitCommand::toTrainData(QDomElement){return TrainData{false};}; // dummy override
+bool ExitCommand::isElementValid(QDomElement){return false;}; // dummy override
+
+
 string  UnRecognizedCommand::get_command() {
     return this->command_t;
 }
@@ -414,6 +466,14 @@ struct CommandResult UnRecognizedCommand::execute_command() {
     res.size_result = 1;
     return res;
 }
+
+bool UnRecognizedCommand::isCommandValid()
+{
+    return !this->incorectCommand;
+}
+
+TrainData UnRecognizedCommand::toTrainData(QDomElement){return TrainData{false};}; // dummy override
+bool UnRecognizedCommand::isElementValid(QDomElement){return false;}; // dummy override
 
 
 // Train Data

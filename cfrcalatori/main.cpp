@@ -21,12 +21,21 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     XmlController xmlFile;
-    vector<TrainData>arrivalsInfo;
-    GetRequests* getArrivals = new GetArrivals("ARRIVALS -stationP Târgu Jiu -stationD Turceni -toHour 12:50 -fromHour 11:13", 1);
-    GetRequests* getDepartures = new GetDepartures("DEPARTURES -station sadasdas Nord -fromHour 12:40", 1);
-    if(getArrivals->isCommandCorrect())
+    vector<TrainData>arrivalsInfo, departuresInfo;
+    Command* getArrivals = new GetArrivals("ARRIVALS -stationP Amaradia -stationD Turceni -toHour 12:29 -fromHour 11:13", 1);
+    Command* getDepartures = new GetDepartures("DEPARTURES -stationP Amaradia -stationD Turceni -toHour 12:30 -fromHour 11:13", 1);
+    if(getArrivals->isCommandValid())
     {
-        xmlFile.getArrivalsInfo(arrivalsInfo, getArrivals);
+        xmlFile.getTrainsInfo(arrivalsInfo, getArrivals);
+    }
+    else
+    {
+        cout << "la pere cu comanda" << endl;
+    }
+
+    if(getDepartures->isCommandValid())
+    {
+        xmlFile.getTrainsInfo(departuresInfo, getDepartures);
     }
     else
     {

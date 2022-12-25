@@ -32,8 +32,7 @@ public:
     XmlController();
     XmlController(char*);
     ~XmlController();
-    void getArrivalsInfo(vector<TrainData>&arrivalsInfo, GetRequests* = nullptr);
-    void getDeparturesInfo(vector<TrainData>&departuresInfo, GetRequests* = nullptr);
+    void getTrainsInfo(vector<TrainData>&trainInfoVec, Command* = nullptr);
     void updateTrainInfo(Command* = nullptr);
     void createTrainInfo(Command* = nullptr);
 };
