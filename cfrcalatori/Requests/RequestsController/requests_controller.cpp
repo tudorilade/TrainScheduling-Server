@@ -37,7 +37,7 @@ int RequestsController::receive_message(const int &client, char* &in_message)
 }
 
 int RequestsController::check_close_connection_request(char* in_message){
-    return strcmp(in_message, "EXIT\n");
+    return strcmp(in_message, "EXIT");
 }
 
 void RequestsController::message_to_upper(char* mess){

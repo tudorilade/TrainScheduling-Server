@@ -31,7 +31,7 @@ Command* CommandFactory::create_command(char *command, int sd) {
     else if(commandS == "UPDATE"){
         return new UpdateTrain(command, sd);
     }
-    else if(strcmp(command, "EXIT\n") == 0)
+    else if(strcmp(command, "EXIT") == 0)
     {
         return new ExitCommand(command, sd);
     }

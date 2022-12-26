@@ -48,8 +48,8 @@ public:
     TrainData() = default;
     ~TrainData() = default;
     bool isValid();
-    const string toString();
-    string convertFromSeconds();
+    const string toDeparturesString();
+    const string toArrivalsString();
 };
 
 
@@ -76,7 +76,7 @@ public:
     ~Command(){command_t = ""; sd = 0; size_command = 0; resultCommand = {};}
 
     struct CommandResult getResult(){return this->resultCommand;};
-    virtual struct CommandResult execute(XmlController) = 0;
+    virtual struct CommandResult execute(XmlController&) = 0;
     virtual string get_command() = 0;
     virtual bool isCommandValid() = 0;
     virtual bool isElementValid(QDomElement) = 0;

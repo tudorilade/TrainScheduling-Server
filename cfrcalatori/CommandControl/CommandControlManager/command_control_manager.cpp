@@ -50,7 +50,7 @@ void CommandManager::RunCommands() {
 }
 
 void CommandManager::QueueCommands(Command* comm) {
-    std::cout << "Queueing command" << std::endl;
+    std::cout << "  :  Queueing command" << std::endl;
     if(!running)
         return; // Queuing not started
 

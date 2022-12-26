@@ -77,20 +77,30 @@ string secondsToMinutes(const unsigned int seconds)
 }
 
 
-const string TrainData::toString()
+const string TrainData::toDeparturesString()
 {
     /* It will represent a row in a table */
     string row;
     row += "| ";
     row += centerContent(this->numeTren, 10) += " | ";
     row += centerContent(this->statieP, 30) += " | ";
-    row += centerContent(this->statieN, 30) += " | ";
     row += centerContent(this->statieD, 30) += "  | ";
-    row += centerContent(secondsToHourMinutes(this->timpSosireP), 15) += " | ";
     row += centerContent(secondsToHourMinutes(this->timpPlecareP), 15) += " | ";
     row += centerContent(secondsToMinutes(this->intarziereP), 15) += " | ";
+    row += centerContent(secondsToHourMinutes(this->timpSosireD), 15) += " | ";
+    row += centerContent(secondsToMinutes(this->intarziereD), 15) += " |\n";
+   return row;
+}
+
+const string TrainData::toArrivalsString()
+{
+    /* It will represent a row in a table */
+    string row;
+    row += "| ";
+    row += centerContent(this->numeTren, 10) += " | ";
+    row += centerContent(this->statieN, 30) += " | ";
+    row += centerContent(this->statieD, 30) += "  | ";
     row += centerContent(secondsToHourMinutes(this->timpSosireN), 15) += " | ";
-    row += centerContent(secondsToHourMinutes(this->timpPlecareN), 15) += " | ";
     row += centerContent(secondsToMinutes(this->intarziereN), 15) += " | ";
     row += centerContent(secondsToHourMinutes(this->timpSosireD), 15) += " | ";
     row += centerContent(secondsToMinutes(this->intarziereD), 15) += " |\n";
@@ -101,26 +111,21 @@ struct CommandResult toTableDepartures(vector<TrainData>&trainInfo)
 {
     /* table header departures
 
-        Tren |  Statie Plecare | Statia urmatoare | Statie Finala | OraSP | OraPP | IntarziereP | OraSN | OraPN | IntarziereN | OraSF | IntarziereF
+        Tren |  Statie Plecare | Statie Destinatie | OraPP | IntarziereP | OraSF | IntarziereF
     */
     struct CommandResult resultCommand;
-    resultCommand.result += "| ";
+    resultCommand.result += "\n| ";
     resultCommand.result += centerContent("Tren", 10) += " | ";
     resultCommand.result += centerContent("Statie Plecare", 30) += " | ";
-    resultCommand.result += centerContent("Statia Urmatoare", 30) += " | ";
-    resultCommand.result += centerContent("Statie Finala", 30) += " | ";
-    resultCommand.result += centerContent("OraSP", 15) += " | ";
-    resultCommand.result += centerContent("OraPP", 15) += " | ";
+    resultCommand.result += centerContent("Statia Destinatie", 30) += " | ";
+    resultCommand.result += centerContent("OraP", 15) += " | ";
     resultCommand.result += centerContent("IntarziereP", 15) += " | ";
-    resultCommand.result += centerContent("OraSN", 15) += " | ";
-    resultCommand.result += centerContent("OraPN", 15) += " | ";
-    resultCommand.result += centerContent("IntarziereN", 15) += " | ";
     resultCommand.result += centerContent("OraSF", 15) += " | ";
     resultCommand.result += centerContent("IntarziereF", 15) += " |\n";
 
     for(auto& train : trainInfo)
     {
-        resultCommand.result += train.toString();
+        resultCommand.result += train.toDeparturesString();
     }
 
     resultCommand.size_result = resultCommand.result.size();
@@ -131,26 +136,21 @@ struct CommandResult toTableArrivals(vector<TrainData>&trainInfo)
 {
     /* table header
 
-        Tren |  Statie Plecare | Statia curenta | Statie Finala | OraSP | OraPP | IntarziereP | OraSC | OraPC | IntarziereC | OraSF | IntarziereF
+        Tren |  Statie Sosiri | Statie Finala | OraSP | IntarziereP | OraSF | IntarziereF
     */
     struct CommandResult resultCommand;
-    resultCommand.result += "| ";
+    resultCommand.result += "\n| ";
     resultCommand.result += centerContent("Tren", 10) += " | ";
-    resultCommand.result += centerContent("Statie Plecare", 30) += " | ";
-    resultCommand.result += centerContent("Statia Curenta", 30) += " | ";
+    resultCommand.result += centerContent("Statie Sosiri", 30) += " | ";
     resultCommand.result += centerContent("Statie Finala", 30) += " | ";
-    resultCommand.result += centerContent("OraSP", 15) += " | ";
-    resultCommand.result += centerContent("OraPP", 15) += " | ";
-    resultCommand.result += centerContent("IntarziereP", 15) += " | ";
-    resultCommand.result += centerContent("OraSC", 15) += " | ";
-    resultCommand.result += centerContent("OraPC", 15) += " | ";
-    resultCommand.result += centerContent("IntarziereC", 15) += " | ";
+    resultCommand.result += centerContent("OraS", 15) += " | ";
+    resultCommand.result += centerContent("IntarziereS", 15) += " | ";
     resultCommand.result += centerContent("OraSF", 15) += " | ";
     resultCommand.result += centerContent("IntarziereF", 15) += " |\n";
 
     for(auto& train : trainInfo)
     {
-        resultCommand.result += train.toString();
+        resultCommand.result += train.toArrivalsString();
     }
 
     resultCommand.size_result = resultCommand.result.size();
@@ -342,7 +342,7 @@ size_t GetRequests::getSizeStationName()
     return this->sizeStation;
 }
 
-void GetRequests::getTrainsInfo(vector<TrainData> &trainInfo, XmlController xmlFile)
+void GetRequests::getTrainsInfo(vector<TrainData> &trainInfo, XmlController &xmlFile)
 {
     QDomElement startTrenuriNode = xmlFile.getTrenuriNode();
     QDomElement trase, elementTrasa;
@@ -387,13 +387,13 @@ GetArrivals::GetArrivals(char* command, int sd) : GetRequests(command, sd) {
 
 GetArrivals::~GetArrivals() = default;
 
-struct CommandResult GetArrivals::execute(XmlController xmlFile){
+struct CommandResult GetArrivals::execute(XmlController &xmlFile){
 
     vector<TrainData>arrivalsInfo;
     if(this->isCommandValid())
     {
         this->getTrainsInfo(arrivalsInfo, xmlFile);
-        this->resultCommand = toTableDepartures(arrivalsInfo);
+        this->resultCommand = toTableArrivals(arrivalsInfo);
     }
     else
     {
@@ -451,14 +451,15 @@ TrainData GetArrivals::toTrainData(QDomElement elementTrasa)
     unsigned int delayP, delayN, delayD, timpStationareP, timpStationareN, timpStationareD;
     unsigned int timpSosireP, timpSosireD, timpSosireN, timpPlecareP, timpPlecareD, timpPlecareN;
 
-    // Train Name
+    // Train NamegetTrainsInfo
     trainName = trenNode.attribute("CategorieTren").toStdString() + trenNode.attribute("Numar").toStdString();
 
     //arrival station
     statieN = elementTrasa.attribute("DenStaOrigine").toStdString();
     delayN = elementTrasa.attribute("Ajustari").toInt();
     timpStationareN = elementTrasa.attribute("StationareSecunde").toInt();
-    timpSosireN = elementTrasa.attribute("OraP").toInt() - timpStationareP + delayP;
+    timpSosireN = elementTrasa.attribute("OraP").toInt() - timpStationareN + delayN;
+    cout << "TIMP SOSIREN: " << timpSosireN << " " << timpStationareN << " " << delayN << endl;
     timpPlecareN= elementTrasa.attribute("OraP").toInt();
 
     // starting station
@@ -487,13 +488,28 @@ TrainData GetArrivals::toTrainData(QDomElement elementTrasa)
         elementTrasa = elementTrasa.nextSibling().toElement();
     }
 
+
     statieD = elementTrasa.attribute("DenStaOrigine").toStdString();
     delayD = elementTrasa.attribute("Ajustari").toInt();
     timpStationareD = elementTrasa.attribute("StationareSecunde").toInt();
     timpSosireD = elementTrasa.attribute("OraP").toInt() - timpStationareD + delayD;
     timpPlecareD = elementTrasa.attribute("OraP").toInt();
 
+    if(this->stationDFlag)
+    {
+        if(statieD != this->stationD)
+        {
+            return TrainData{false}; // means even though an arrival station exists, it is not going to stationD provided
+        }
+    }
 
+    /*         string numeTren, string statieP, string statieN, string statieD,
+        unsigned int intarziereP, unsigned int intarziereD, unsigned int intarziereN,
+        unsigned int timpStationareP, unsigned int timpStationareD, unsigned int timpStationareN,
+        unsigned int timpSosireP, unsigned int timpSosireD, unsigned int timpSosireN,
+        unsigned int timpPlecareP, unsigned int timpPlecareD, unsigned int timpPlecareN*/
+
+    cout << "TIMP SOSIRE N: " << timpSosireN << endl;
     return TrainData{
     trainName, statieP, statieN, statieD, delayP, delayD, delayN, timpStationareP,
     timpStationareD, timpStationareN, timpSosireP, timpSosireD, timpSosireN, timpPlecareP, timpPlecareD,
@@ -515,7 +531,7 @@ GetDepartures::GetDepartures(char* command, int sd) : GetRequests(command, sd)
         this->incorectCommand = true;
 }
 
-struct CommandResult GetDepartures::execute(XmlController xmlFile){
+struct CommandResult GetDepartures::execute(XmlController &xmlFile){
     vector<TrainData>departuresInfo;
     struct CommandResult resultCommand;
 
@@ -648,7 +664,7 @@ TrainData GetDepartures::toTrainData(QDomElement elementTrasa)
 
 
 /* UPDATE Command*/
-struct CommandResult UpdateTrain::execute(XmlController xmlFile){
+struct CommandResult UpdateTrain::execute(XmlController &xmlFile){
     cout << "Se execute comanda: Update train route" << endl;
     return this->resultCommand;
 }
@@ -667,7 +683,7 @@ bool UpdateTrain::isElementValid(QDomElement){return false;}; // dummy override
 
 
 /* CREATE Command */
-struct CommandResult CreateNewRoute::execute(XmlController xmlFile){
+struct CommandResult CreateNewRoute::execute(XmlController &xmlFile){
     cout << "Se execute comanda: Create new Route" << endl;
     return this->resultCommand;
 }
@@ -685,7 +701,7 @@ TrainData CreateNewRoute::toTrainData(QDomElement){return TrainData{false};}; //
 bool CreateNewRoute::isElementValid(QDomElement){return false;}; // dummy override
 
 
-struct CommandResult ExitCommand::execute(XmlController xmlFile){
+struct CommandResult ExitCommand::execute(XmlController &xmlFile){
     cout << "Se execute comanda: Exit connection" << endl;
     this->resultCommand.result.assign("EXIT");
     this->resultCommand.size_result = 4;
@@ -710,11 +726,10 @@ string  UnRecognizedCommand::get_command() {
     return this->command_t;
 }
 
-struct CommandResult UnRecognizedCommand::execute(XmlController xmlFile) {
+struct CommandResult UnRecognizedCommand::execute(XmlController &xmlFile) {
     struct CommandResult res {};
-    res.result = reinterpret_cast<char*>(malloc(1));
-    res.result.assign("0");
-    res.size_result = 1;
+    res.result.assign("Comanda invalida! Va rugam incercati din nou!\n");
+    res.size_result = res.result.size();
     return res;
 }
 
