@@ -27,6 +27,9 @@ int RequestsController::receive_message(const int &client, char* &in_message)
     offset1 = read(client, &stream_c, sizeof(size_t));
     if(offset1 == -1)
         return -1;
+    if(offset1 == 0)
+        return -2;
+
 
     in_message = (char*)malloc(stream_c);
     offset = read(client, in_message, stream_c);
@@ -48,6 +51,7 @@ void RequestsController::message_to_upper(char* mess){
 void RequestsController::handle_request(void *arg) {
     char* in_msg;
     struct thData tdL {};
+    int status = 1;
     XmlController xmlFile;
     CommandManager manager {xmlFile};
 
@@ -55,9 +59,17 @@ void RequestsController::handle_request(void *arg) {
     manager.ManageCommands();
     while( connection )
     {
-        if(-1 == this->receive_message(tdL.client, in_msg)){
+        if(-1 == (status = this->receive_message(tdL.client, in_msg))){
             std::cout << "Eroare citire din thread: " << tdL.idThread << std::endl;
-            this->send_message(tdL.client, this->ERROR_REQUEST); free(in_msg);
+            connection = 0; // CLOSING CLIENT CONNECTION
+            close(tdL.client);
+            continue;
+        }
+        if(status == -2)
+        {
+            // SIGINT and SIGSTP
+            close(tdL.client);
+            connection = 0;
             continue;
         }
         this->message_to_upper(in_msg); // upper just ARRIVALS - DEPARTURES etc.

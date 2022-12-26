@@ -1,32 +1,26 @@
 #include "mainwindow.h"
-
 #include <QApplication>
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <errno.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <netdb.h>
-#include <string.h>
-#include <ctype.h>
+#include "utils/sig_handlers.h"
 
 extern int errno;
 
+int connection = 1;
+int sd;			// descriptorul de socket
 int port;
 
-void to_upper(char*);
+void sig_stp(int signal)
+{
+	connection = 0;
+	close(sd);
+	_exit(1);
+}
 
 int main (int argc, char *argv[])
 {
-    int sd;			// descriptorul de socket
+    struct sigaction act;
     struct sockaddr_in server;	// structura folosita pentru conectare
     // mesajul trimis
     int nr=0;
-    unsigned char buff[sizeof(struct in6_addr)];
 
     /* exista toate argumentele in linia de comanda? */
     if (argc != 3)
@@ -59,12 +53,19 @@ int main (int argc, char *argv[])
         perror ("[client]Eroare la connect().\n");
         return errno;
     }
-    char* msg = (char*)malloc(1000);
+    char* msg = (char*)malloc(4096);
     char* buf = (char*)malloc(4096);
     int bytes = 0;
+    signal(SIGTSTP, sig_stp);
+    signal(SIGINT, sig_stp);
+    act.sa_handler = sig_stp;
+    sigaction(SIGINT, &act, 0);
+    sigaction(SIGTSTP, &act, 0);
+    sigaction(SIGTERM, &act, 0);
+
     while( NULL != fgets(buf, 4096, stdin), !feof(stdin))
     {
-
+    
         size_t length = strlen(buf);
         buf[length] = '\0';
 
@@ -101,40 +102,4 @@ int main (int argc, char *argv[])
         buf = (char*)malloc(4096);
     }
     close (sd);
-}
-
-
-int send_message_to_client(int fd, char* message)
-{
-    size_t length = strlen(message);
-    int nr = 0;
-    if(-1 == write(fd, &length, sizeof(length)))
-        return -1;
-
-    if(-1 == write(fd, message, length))
-        return -1;
-    return 0;
-}
-
-int receive_message_from_client(int client, char* in_message)
-{
-    free(in_message);
-    int offset=0, stream_c=0;
-    if((offset = read(client, &stream_c, sizeof(int))) == -1)
-        return -1;
-    in_message = (char*)malloc(stream_c * sizeof(char) + 1);
-    offset = read(client, in_message, stream_c);
-    if(stream_c != offset)
-        return -1;
-
-    in_message[stream_c] = '\0';
-    return 0;
-}
-
-void to_upper(char* msg)
-{
-   for(int i = 0; msg[i] != '\0'; i++){
-     msg[i] = toupper(msg[i]);
-   }
-
 }
