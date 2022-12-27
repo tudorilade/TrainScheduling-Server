@@ -12,8 +12,8 @@ void ClientController::start_server() {
         throw "[SERVER] Eroare creare socket()\n";
 
     setsockopt(sd,SOL_SOCKET,SO_REUSEADDR,&on,sizeof(on));
-    bzero (&server, sizeof (server));
-    bzero (&from, sizeof (from));
+    memset (&server, 0, sizeof (server));
+    memset (&from, 0, sizeof (from));
 
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = htonl (INADDR_ANY);
@@ -32,11 +32,14 @@ void ClientController::start_server() {
     while( true )
     {
         socklen_t length = sizeof (from);
+        pthread_mutex_lock(&mlock);
         if ((client = accept (sd, (struct sockaddr *) &from, &length)) < 0 )
         {
             perror ("[server] Eroare la accept().\n");
+            pthread_mutex_unlock(&mlock);
             continue;
         }
+        pthread_mutex_unlock(&mlock);
         thread_factory.create_thread(client);
     }
 

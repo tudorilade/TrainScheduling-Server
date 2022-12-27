@@ -7,15 +7,6 @@
 
 #include "command_ABC.h"
 
-class UpdateTrain : public Command{
-public:
-    UpdateTrain(char* command, int sd): Command(command, sd) {};
-    struct CommandResult execute(XmlController&) override;
-    string get_command() override;
-    bool isCommandValid() override;
-    TrainData toTrainData(QDomElement) override;
-    bool isElementValid(QDomElement) override;
-};
 
 
 class GetRequests : public Command
@@ -31,7 +22,7 @@ protected:
     size_t sizeStationD = 0;
     bool fromHourFlag = false, toHourFlag = false, incorectHourArguments = false, stationDFlag = false, stationPFlag = false;
 public:
-    GetRequests(char* command, int sd);
+    GetRequests(const char* command, int sd);
     GetRequests() = default;
     ~GetRequests();
     string getStationName();
@@ -48,61 +39,73 @@ public:
 
 class GetArrivals : public GetRequests{
 public:
-    GetArrivals(char*, int);
+    GetArrivals(const char*, int);
     GetArrivals() = default;
     ~GetArrivals();
     struct CommandResult execute(XmlController&) override;
     string get_command() override;
-    bool isElementValid(QDomElement) override;
-    TrainData toTrainData(QDomElement) override;
+    bool isElementValid(QDomElement&) override;
+    TrainData toTrainData(QDomElement&) override;
 
 };
 
 
 class GetDepartures : public GetRequests{
 public:
-    GetDepartures(char*, int);
+    GetDepartures(const char*, int);
     GetDepartures() = default;
     struct CommandResult execute(XmlController&) override;
     string get_command() override;
-    bool isElementValid(QDomElement) override;
-    TrainData toTrainData(QDomElement) override;
+    bool isElementValid(QDomElement&) override;
+    TrainData toTrainData(QDomElement&) override;
 };
 
 
-class CreateNewRoute : public Command{
+class UpdateTrain : public Command{
+private:
+    string targetStation; // target station from where delay should be propagated. If non supplied, all the route will be updated with supplied delay.
+    string stopStation; // station where the delay propagation should be stopped
+    string updateCommand;
+    string trainID;
+    unsigned int delay = 0;
+    size_t sizeCommand = 12;
+    size_t sizeStation = 0;
+    size_t sizeTrainID = 0;
+    bool targetSFlag = false, delayFlag = false, trainIDFlag = false, stopStationFlag = false;
+    pthread_mutex_t writeMutex;
 public:
-    CreateNewRoute(char* command, int sd) : Command(command, sd) {};
-    CreateNewRoute() = default;
+    UpdateTrain(const char* command, int sd, pthread_mutex_t&);
     struct CommandResult execute(XmlController&) override;
     string get_command() override;
     bool isCommandValid() override;
-    TrainData toTrainData(QDomElement) override;
-    bool isElementValid(QDomElement) override;
+    TrainData toTrainData(QDomElement&) override;
+    bool isElementValid(QDomElement&) override;
+    void updateElement(QDomElement&);
+
 };
 
 
 class ExitCommand : public Command{
 public:
-    ExitCommand(char* command, int sd) : Command(command, sd) {};
+    ExitCommand(const char* command, int sd) : Command(command, sd) {};
     ExitCommand() = default;
     struct CommandResult execute(XmlController&) override;
     string get_command() override;
     bool isCommandValid() override;
-    TrainData toTrainData(QDomElement) override;
-    bool isElementValid(QDomElement) override;
+    TrainData toTrainData(QDomElement&) override;
+    bool isElementValid(QDomElement&) override;
 };
 
 
 class UnRecognizedCommand : public Command{
 public:
-    UnRecognizedCommand(char* command, int sd) : Command(command, sd) {};
+    UnRecognizedCommand(string command, int sd) : Command(command.c_str(), sd) {};
     UnRecognizedCommand() = default;
     struct CommandResult execute(XmlController&) override;
     string get_command() override;
     bool isCommandValid() override;
-    TrainData toTrainData(QDomElement) override;
-    bool isElementValid(QDomElement) override;
+    TrainData toTrainData(QDomElement&) override;
+    bool isElementValid(QDomElement&) override;
 };
 
 

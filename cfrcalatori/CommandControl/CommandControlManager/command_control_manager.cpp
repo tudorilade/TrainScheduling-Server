@@ -42,6 +42,7 @@ void CommandManager::RunCommands() {
     {
         if(queue.empty())
             continue;
+        this->xmlFile = XmlController{};
         this->executeCommands(queue.front());
         queue.pop_front();
     }
@@ -62,9 +63,11 @@ void CommandManager::executeCommands(Command * command) {
     struct CommandResult res = command->execute(this->xmlFile);
     char *out_msg = static_cast<char *>(malloc(res.size_result+1));
     strncpy(out_msg, res.result.c_str(), res.size_result);
+    out_msg[res.size_result] = '\0';
     RequestsController::send_message(command->get_client_sd(), out_msg);
     if(res.result.compare("EXIT") == 0){
         running = false;
+        close(command->get_client_sd());
     }
 
     free(out_msg);

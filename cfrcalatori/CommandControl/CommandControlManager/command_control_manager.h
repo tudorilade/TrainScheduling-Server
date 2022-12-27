@@ -14,6 +14,7 @@ private:
     XmlController xmlFile;
 private:
     std::thread commandThreads;
+    std::thread xmlThread;
     std::deque<Command*> queue {};
 public:
     CommandManager() = default;
@@ -21,6 +22,7 @@ public:
     ~CommandManager();
     void ManageCommands();
     void RunCommands();
+    void updateXmlFile();
     void QueueCommands(Command*);
     void executeCommands(Command*);
 

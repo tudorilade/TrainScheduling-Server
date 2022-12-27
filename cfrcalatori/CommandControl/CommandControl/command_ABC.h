@@ -66,7 +66,7 @@ protected:
     size_t size_command;
     bool incorectCommand = false;
 public:
-    Command(char* com, int sd){
+    Command(const char* com, int sd){
         this->size_command = strlen(com);
         this->sd = sd;
         this->command_t.assign(com, this->size_command);
@@ -79,8 +79,8 @@ public:
     virtual struct CommandResult execute(XmlController&) = 0;
     virtual string get_command() = 0;
     virtual bool isCommandValid() = 0;
-    virtual bool isElementValid(QDomElement) = 0;
-    virtual TrainData toTrainData(QDomElement) = 0;
+    virtual bool isElementValid(QDomElement&) = 0;
+    virtual TrainData toTrainData(QDomElement&) = 0;
     [[nodiscard]] int get_client_sd() const{return this->sd;};
     [[nodiscard]] size_t get_size_command()const{return this->size_command;};
 

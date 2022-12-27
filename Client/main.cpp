@@ -55,7 +55,6 @@ int main (int argc, char *argv[])
     }
     char* msg = (char*)malloc(4096);
     char* buf = (char*)malloc(4096);
-    int bytes = 0;
     signal(SIGTSTP, sig_stp);
     signal(SIGINT, sig_stp);
     act.sa_handler = sig_stp;
@@ -69,7 +68,7 @@ int main (int argc, char *argv[])
         size_t length = strlen(buf);
         buf[length] = '\0';
 
-        printf("[client] Am citit %s", buf);
+        printf("[client] Am citit de la tastatura: %s", buf);
 
         /* trimiterea mesajului la server */
         write(sd, &length, sizeof(size_t));
@@ -85,12 +84,12 @@ int main (int argc, char *argv[])
 
         msg = (char*)malloc(length);
 
-        if ((bytes = read (sd, msg, length)) < 0)
+        if ((read (sd, msg, length)) <= 0)
         {
             perror ("[client]Eroare la read() de la server.\n");
             return errno;
         }
-        msg[bytes] = '\0';
+        msg[length] = '\0';
         printf ("[client] Mesajul primit este: %s\n", msg);
         to_upper(buf);
         if(strcmp(buf, "EXIT\n") == 0)

@@ -21,7 +21,7 @@ Class responsible by handling the xmlFile with I/O operations.
 */
 
 private:
-    char* xmlPath;
+    string xmlPath;
     size_t pathSize = 0;
     bool opened = false;
     QDomDocument document;
@@ -31,6 +31,8 @@ public:
     XmlController();
     XmlController(char*);
     QDomElement getTrenuriNode();
+    QDomDocument& getDocument();
+    bool writeDocumentOnDisk(QDomDocument);
 };
 
 #endif

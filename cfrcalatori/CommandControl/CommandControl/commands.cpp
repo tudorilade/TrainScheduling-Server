@@ -46,123 +46,18 @@ int checkIfCorrectHourArgument(char* arg)
     return k;
 }
 
-
-string centerContent(const string s, const int width) {
-    /* Centers te content of table header */
-    stringstream ss, spaces;
-    int padding = width - s.size();// count excess room to pad
-    for(int i=0; i<padding/2; ++i)
-        spaces << " ";
-
-    ss << spaces.str() << s << spaces.str();    // format with padding
-    if(padding>0 && padding%2!=0)               // if odd #, add 1 space
-        ss << " ";
-    return ss.str();
-}
-
-string secondsToHourMinutes(const unsigned int seconds)
+int checkIfCommandExists(const char* command, int& i, int& j)
 {
-    /* converts seconds to HH:MM format */
-    stringstream format;
-    format << (int)(seconds / 3600) << ":" << (int)((seconds % 3600) / 60);
-    return format.str();
-}
+    /* Function responsonsible to determine whether the command exists
 
-string secondsToMinutes(const unsigned int seconds)
-{
-    /* convers seconds to MM format */
-    stringstream format;
-    format << (int)(seconds / 60);
-    return format.str();
-}
+    It looks if supplied command exists (e.g DEPARTURES, ARRIVALS, UPDATE).
+    Index i corresponds to the begining of command. Index j corresponds to the end of it. (e.g i points to char 'A' and j points to 'S' from ARRIVALS command)
 
+    return value:
+        0 -> command correspond and i and j are correctly populated
+        1 -> command is invalid (i.e It was supplied only command without arguments)
+*/
 
-const string TrainData::toDeparturesString()
-{
-    /* It will represent a row in a table */
-    string row;
-    row += "| ";
-    row += centerContent(this->numeTren, 10) += " | ";
-    row += centerContent(this->statieP, 30) += " | ";
-    row += centerContent(this->statieD, 30) += "  | ";
-    row += centerContent(secondsToHourMinutes(this->timpPlecareP), 15) += " | ";
-    row += centerContent(secondsToMinutes(this->intarziereP), 15) += " | ";
-    row += centerContent(secondsToHourMinutes(this->timpSosireD), 15) += " | ";
-    row += centerContent(secondsToMinutes(this->intarziereD), 15) += " |\n";
-   return row;
-}
-
-const string TrainData::toArrivalsString()
-{
-    /* It will represent a row in a table */
-    string row;
-    row += "| ";
-    row += centerContent(this->numeTren, 10) += " | ";
-    row += centerContent(this->statieN, 30) += " | ";
-    row += centerContent(this->statieD, 30) += "  | ";
-    row += centerContent(secondsToHourMinutes(this->timpSosireN), 15) += " | ";
-    row += centerContent(secondsToMinutes(this->intarziereN), 15) += " | ";
-    row += centerContent(secondsToHourMinutes(this->timpSosireD), 15) += " | ";
-    row += centerContent(secondsToMinutes(this->intarziereD), 15) += " |\n";
-   return row;
-}
-
-struct CommandResult toTableDepartures(vector<TrainData>&trainInfo)
-{
-    /* table header departures
-
-        Tren |  Statie Plecare | Statie Destinatie | OraPP | IntarziereP | OraSF | IntarziereF
-    */
-    struct CommandResult resultCommand;
-    resultCommand.result += "\n| ";
-    resultCommand.result += centerContent("Tren", 10) += " | ";
-    resultCommand.result += centerContent("Statie Plecare", 30) += " | ";
-    resultCommand.result += centerContent("Statia Destinatie", 30) += " | ";
-    resultCommand.result += centerContent("OraP", 15) += " | ";
-    resultCommand.result += centerContent("IntarziereP", 15) += " | ";
-    resultCommand.result += centerContent("OraSF", 15) += " | ";
-    resultCommand.result += centerContent("IntarziereF", 15) += " |\n";
-
-    for(auto& train : trainInfo)
-    {
-        resultCommand.result += train.toDeparturesString();
-    }
-
-    resultCommand.size_result = resultCommand.result.size();
-    return resultCommand;
-}
-
-struct CommandResult toTableArrivals(vector<TrainData>&trainInfo)
-{
-    /* table header
-
-        Tren |  Statie Sosiri | Statie Finala | OraSP | IntarziereP | OraSF | IntarziereF
-    */
-    struct CommandResult resultCommand;
-    resultCommand.result += "\n| ";
-    resultCommand.result += centerContent("Tren", 10) += " | ";
-    resultCommand.result += centerContent("Statie Sosiri", 30) += " | ";
-    resultCommand.result += centerContent("Statie Finala", 30) += " | ";
-    resultCommand.result += centerContent("OraS", 15) += " | ";
-    resultCommand.result += centerContent("IntarziereS", 15) += " | ";
-    resultCommand.result += centerContent("OraSF", 15) += " | ";
-    resultCommand.result += centerContent("IntarziereF", 15) += " |\n";
-
-    for(auto& train : trainInfo)
-    {
-        resultCommand.result += train.toArrivalsString();
-    }
-
-    resultCommand.size_result = resultCommand.result.size();
-    return resultCommand;
-}
-
-
-
-/* GET Commands - interprets the parsed command */
-GetRequests::GetRequests(char* command, int sd) : Command(command, sd)
-{
-    int i = 0, j = 0, k = 0;
     while(command[i] == ' '){i++;};
     j = i;
     while(command[j] != '-')
@@ -170,10 +65,66 @@ GetRequests::GetRequests(char* command, int sd) : Command(command, sd)
         if(command[j] == '\0')
         {
             // case when input is just "ARRIVALS", or any string
-            this->incorectCommand = true;
-            break;
+            return 1;
         }
         j++;
+    }
+    return 0;
+}
+
+void removeBlankSpaces(const char* command, int& i, bool &end)
+{
+    /* Removes blank spaces between commands
+
+    If a command like: "arrivals -stationP name -stationD" is provided, end will become true.
+    This results in an incorrect command
+    */
+    while(command[i] == ' ')
+    {
+        // remove blank spaces
+        i++;
+        if(command[i] == '\0')
+        {
+            end = true;
+        }
+    }
+}
+
+void checkArgument(const char* command, int& i, int& j, int& k)
+{
+    /* returns the indexes in between argument is found
+
+     e.g: k will be the index of end of argument ("d" in case of Bucuresti Nord). j is the length of the argument
+*/
+    while(true)
+    {
+        /* Case when station is formed of multiple words (e.g. Bucuresti Nord) */
+        if(command[i] != '-' && command[i] != '\0')
+        {
+            i++; j++;
+        }
+        else if(command[i] == '\0' || command[i] == '-')
+        {
+            j--;
+            i--;
+            k = i;
+            while(command[k]==' ')
+            {
+                k--;
+                j--;
+            };
+            break;
+        }
+    }
+}
+/* GET Commands - interprets the parsed command */
+GetRequests::GetRequests(const char* command, int sd) : Command(command, sd)
+{
+    int i = 0, j = 0, k = 0;
+
+    if(checkIfCommandExists(command, i, j) != 0)
+    {
+        this->incorectCommand = true;
     }
 
     this->sizeCommand = (size_t)(j - i - 1);
@@ -186,57 +137,29 @@ GetRequests::GetRequests(char* command, int sd) : Command(command, sd)
     for(i = j; command[i] != '\0'; i++)
     {
         j = 0; k = 0;
-        while(command[i] == ' ')
-        {
-            // remove blank spaces
-            i++;
-            if(command[i] == '\0')
-            {
-                end = true;
-                break;
-            }
-        }
+        removeBlankSpaces(command, i, end);
         if(end){break;}
 
         for(j = i; command[j] != ' '; j++); // get the length of the flag
-
         flag = (char*)malloc(j-i+1); // allocate memory of it
-
         strncpy(flag, command + i, j-i+1); // check the flag
         flag[j-i] = '\0';
 
         i = j; j = 0;
-        while(true)
-        {
-            /* Case when station is formed of multiple words (e.g. Bucuresti Nord) */
-            if(command[i] != '-' && command[i] != '\0')
-            {
-                i++; j++;
-            }
-            else if(command[i] == '\0' || command[i] == '-')
-            {
-                j--;
-                i--;
-                k = i;
-                while(command[k]==' ')
-                {
-                    k--;
-                    j--;
-                };
-                break;
-            }
-        }
+        checkArgument(command, i, j, k);
+
         if(j == -1)
         {
             // Nu s-a parsat un argument
             this->incorectCommand = true;
+            free(flag);
             break;
         }
         arg = (char*)malloc(j+1);
         strncpy(arg, command + k - j + 1, j);
         arg[j] = '\0';
 
-        if(strcmp(flag, "-stationP") == 0)
+        if(strcmp(flag, "-stationPS") == 0)
         {
             this->sizeStation = (size_t)j;
             this->targetStation.assign(arg, this->sizeStation);
@@ -253,6 +176,7 @@ GetRequests::GetRequests(char* command, int sd) : Command(command, sd)
             if((k = checkIfCorrectHourArgument(arg)) == -1)
             {
                 this->incorectHourArguments = true;
+                free(flag); free(arg);
                 break;
             }
             char* hour = (char*)malloc(4);
@@ -276,6 +200,7 @@ GetRequests::GetRequests(char* command, int sd) : Command(command, sd)
         else
         {
             this->incorectCommand = true;
+            free(arg); free(flag);
             break;
         }
         free(flag); free(arg);
@@ -361,7 +286,7 @@ void GetRequests::getTrainsInfo(vector<TrainData> &trainInfo, XmlController &xml
                        TrainData infoTrain = this->toTrainData(elementTrasa);
                        if(infoTrain.isValid())
                        {
-                        trainInfo.emplace_back(this->toTrainData(elementTrasa));
+                        trainInfo.emplace_back(infoTrain);
                        }
                        break;
                    }
@@ -376,7 +301,7 @@ void GetRequests::getTrainsInfo(vector<TrainData> &trainInfo, XmlController &xml
 
 
 /* GET ARRIVALS Command */
-GetArrivals::GetArrivals(char* command, int sd) : GetRequests(command, sd) {
+GetArrivals::GetArrivals(const char* command, int sd) : GetRequests(command, sd) {
     if(!((this->getCommand.compare("ARRIVALS") != 0) || (this->getCommand.compare("DEPARTURES") != 0)))
         this->incorectCommand = true;
     else if(this->incorectHourArguments)
@@ -408,7 +333,7 @@ string  GetArrivals::get_command() {
     return this->command_t;
 }
 
-bool GetArrivals::isElementValid(QDomElement elementTrasa)
+bool GetArrivals::isElementValid(QDomElement &elementTrasa)
 {
     /*
      * returns true if trasa element corresponds to command arguments
@@ -442,7 +367,7 @@ bool GetArrivals::isElementValid(QDomElement elementTrasa)
 }
 
 
-TrainData GetArrivals::toTrainData(QDomElement elementTrasa)
+TrainData GetArrivals::toTrainData(QDomElement &elementTrasa)
 {
     /* converts a DomElement to TrainData class given the details within Command */
     TrainData infoAboutATrain;
@@ -458,8 +383,7 @@ TrainData GetArrivals::toTrainData(QDomElement elementTrasa)
     statieN = elementTrasa.attribute("DenStaOrigine").toStdString();
     delayN = elementTrasa.attribute("Ajustari").toInt();
     timpStationareN = elementTrasa.attribute("StationareSecunde").toInt();
-    timpSosireN = elementTrasa.attribute("OraP").toInt() - timpStationareN + delayN;
-    cout << "TIMP SOSIREN: " << timpSosireN << " " << timpStationareN << " " << delayN << endl;
+    timpSosireN = elementTrasa.attribute("OraP").toInt() - timpStationareN;
     timpPlecareN= elementTrasa.attribute("OraP").toInt();
 
     // starting station
@@ -471,7 +395,7 @@ TrainData GetArrivals::toTrainData(QDomElement elementTrasa)
     statieP = startingStation.attribute("DenStaOrigine").toStdString();
     delayP = startingStation.attribute("Ajustari").toInt();
     timpStationareP = startingStation.attribute("StationareSecunde").toInt();
-    timpSosireP = startingStation.attribute("OraP").toInt() - timpStationareP + delayP;
+    timpSosireP = startingStation.attribute("OraP").toInt() - timpStationareP;
     timpPlecareP = startingStation.attribute("OraP").toInt();
 
     // final station
@@ -488,11 +412,10 @@ TrainData GetArrivals::toTrainData(QDomElement elementTrasa)
         elementTrasa = elementTrasa.nextSibling().toElement();
     }
 
-
     statieD = elementTrasa.attribute("DenStaOrigine").toStdString();
     delayD = elementTrasa.attribute("Ajustari").toInt();
     timpStationareD = elementTrasa.attribute("StationareSecunde").toInt();
-    timpSosireD = elementTrasa.attribute("OraP").toInt() - timpStationareD + delayD;
+    timpSosireD = elementTrasa.attribute("OraP").toInt() - timpStationareD;
     timpPlecareD = elementTrasa.attribute("OraP").toInt();
 
     if(this->stationDFlag)
@@ -503,13 +426,6 @@ TrainData GetArrivals::toTrainData(QDomElement elementTrasa)
         }
     }
 
-    /*         string numeTren, string statieP, string statieN, string statieD,
-        unsigned int intarziereP, unsigned int intarziereD, unsigned int intarziereN,
-        unsigned int timpStationareP, unsigned int timpStationareD, unsigned int timpStationareN,
-        unsigned int timpSosireP, unsigned int timpSosireD, unsigned int timpSosireN,
-        unsigned int timpPlecareP, unsigned int timpPlecareD, unsigned int timpPlecareN*/
-
-    cout << "TIMP SOSIRE N: " << timpSosireN << endl;
     return TrainData{
     trainName, statieP, statieN, statieD, delayP, delayD, delayN, timpStationareP,
     timpStationareD, timpStationareN, timpSosireP, timpSosireD, timpSosireN, timpPlecareP, timpPlecareD,
@@ -520,8 +436,7 @@ TrainData GetArrivals::toTrainData(QDomElement elementTrasa)
 
 
 /* GET DEPARTURES */
-
-GetDepartures::GetDepartures(char* command, int sd) : GetRequests(command, sd)
+GetDepartures::GetDepartures(const char* command, int sd) : GetRequests(command, sd)
 {
     if(!((this->getCommand.compare("ARRIVALS") != 0) || (this->getCommand.compare( "DEPARTURES") != 0)))
         this->incorectCommand = true;
@@ -554,7 +469,7 @@ string  GetDepartures::get_command() {
     return this->command_t;
 }
 
-bool GetDepartures::isElementValid(QDomElement elementTrasa)
+bool GetDepartures::isElementValid(QDomElement &elementTrasa)
 {
     /*
      * returns true if trasa element corresponds to command arguments
@@ -585,7 +500,7 @@ bool GetDepartures::isElementValid(QDomElement elementTrasa)
     return true;
 }
 
-TrainData GetDepartures::toTrainData(QDomElement elementTrasa)
+TrainData GetDepartures::toTrainData(QDomElement &elementTrasa)
 {
     /* converts a DomElement to TrainData class given the details within Command */
     TrainData infoAboutATrain;
@@ -601,7 +516,7 @@ TrainData GetDepartures::toTrainData(QDomElement elementTrasa)
     statieP = elementTrasa.attribute("DenStaOrigine").toStdString();
     delayP = elementTrasa.attribute("Ajustari").toInt();
     timpStationareP = elementTrasa.attribute("StationareSecunde").toInt();
-    timpSosireP = elementTrasa.attribute("OraP").toInt() - timpStationareP + delayP;
+    timpSosireP = elementTrasa.attribute("OraP").toInt() - timpStationareP;
     timpPlecareP= elementTrasa.attribute("OraP").toInt();
 
 
@@ -612,7 +527,7 @@ TrainData GetDepartures::toTrainData(QDomElement elementTrasa)
         statieN = elementTrasa.attribute("DenStaOrigine").toStdString();
         delayN = elementTrasa.attribute("Ajustari").toInt();
         timpStationareN = elementTrasa.attribute("StationareSecunde").toInt();
-        timpSosireN = elementTrasa.attribute("OraP").toInt() - timpStationareN + delayN;
+        timpSosireN = elementTrasa.attribute("OraP").toInt() - timpStationareN;
         timpPlecareN = elementTrasa.attribute("OraP").toInt();
     }
 
@@ -622,7 +537,7 @@ TrainData GetDepartures::toTrainData(QDomElement elementTrasa)
         statieD = elementTrasa.attribute("DenStaOrigine").toStdString();
         delayD = elementTrasa.attribute("Ajustari").toInt();
         timpStationareD = elementTrasa.attribute("StationareSecunde").toInt();
-        timpSosireD = elementTrasa.attribute("OraP").toInt() - timpStationareD + delayD;
+        timpSosireD = elementTrasa.attribute("OraP").toInt() - timpStationareD;
         timpPlecareD = elementTrasa.attribute("OraP").toInt();
     }
     else
@@ -642,7 +557,7 @@ TrainData GetDepartures::toTrainData(QDomElement elementTrasa)
         statieD = elementTrasa.attribute("DenStaOrigine").toStdString();
         delayD = elementTrasa.attribute("Ajustari").toInt();
         timpStationareD = elementTrasa.attribute("StationareSecunde").toInt();
-        timpSosireD = elementTrasa.attribute("OraP").toInt() - timpStationareD + delayD;
+        timpSosireD = elementTrasa.attribute("OraP").toInt() - timpStationareD;
         timpPlecareD = elementTrasa.attribute("OraP").toInt();
         if(this->stationDFlag)
         {
@@ -662,11 +577,201 @@ TrainData GetDepartures::toTrainData(QDomElement elementTrasa)
 }
 
 
-
 /* UPDATE Command*/
+
+UpdateTrain::UpdateTrain(const char* command, int sd, pthread_mutex_t& mutex) : Command(command, sd)
+{
+    int i = 0, j = 0, k = 0;
+
+    if(checkIfCommandExists(command, i, j) != 0)
+    {
+        this->incorectCommand = true;
+    }
+
+    this->sizeCommand = (size_t)(j - i - 1);
+    this->updateCommand.assign(command, i, this->sizeCommand);
+
+    if(updateCommand != "UPDATE")
+    {
+        this->incorectCommand = true;
+    }
+
+    bool end = false;
+    char* flag = 0;
+    char* arg = 0;
+
+    for(i = j; command[i] != '\0'; i++)
+    {
+        j = 0; k = 0;
+        removeBlankSpaces(command, i, end);
+        if(end){break;}
+
+        for(j = i; command[j] != ' '; j++); // get the length of the flag
+        flag = (char*)malloc(j-i+1); // allocate memory of it
+        strncpy(flag, command + i, j-i+1); // check the flag
+        flag[j-i] = '\0';
+
+        i = j; j = 0;
+        checkArgument(command, i, j, k);
+
+        if(j == -1)
+        {
+            // Nu s-a parsat un argument
+            this->incorectCommand = true;
+            free(flag);
+            break;
+        }
+        arg = (char*)malloc(j+1);
+        strncpy(arg, command + k - j + 1, j);
+        arg[j] = '\0';
+
+        if(strcmp(flag, "-fromStation") == 0)
+        {
+            this->sizeStation = (size_t)j;
+            this->targetStation.assign(arg, this->sizeStation);
+            this->targetSFlag = true;
+        }
+        else if(strcmp(flag, "-delay") == 0)
+        {
+            this->delay = atoi(arg) * 60; // convert minutes in seconds
+            this->delayFlag = true;
+        }
+        else if(strcmp(flag, "-train") == 0)
+        {
+            this->sizeTrainID = (size_t)j;
+            this->trainID.assign(arg, this->sizeTrainID);
+            this->trainIDFlag = true;
+        }
+        else if(strcmp(flag, "-toStation") == 0)
+        {
+            this->stopStation.assign(arg, (size_t)j);
+            this->stopStationFlag = true;
+        }
+        else
+        {
+            this->incorectCommand = true;
+            free(flag); free(arg);
+            break;
+        }
+    }
+
+    if(this->delayFlag)
+    {
+        if(this->delay > 24 * 3600) // delay over 24 hours is not considered
+            this->incorectCommand = true;
+    }
+
+    if(!this->trainIDFlag || !this->delayFlag)
+    {
+        this->incorectCommand = true;
+    }
+
+    this->writeMutex = mutex;
+
+}
+
 struct CommandResult UpdateTrain::execute(XmlController &xmlFile){
-    cout << "Se execute comanda: Update train route" << endl;
+    if(this->incorectCommand)
+    {
+        this->resultCommand.result = "Comanda este invalida. Va rugam sa transmiteti o comanda cu toate argumentele valide.";
+        this->resultCommand.size_result = this->resultCommand.result.size();
+        return this->resultCommand;
+    }
+    QDomDocument document = xmlFile.getDocument();
+    QDomElement root = document.documentElement(), tren;
+    QDomNodeList trenuri = root.firstChild().firstChild().firstChild().childNodes();
+    bool trainFound = false;
+    string tag = root.firstChild().firstChild().firstChild().toElement().tagName().toStdString();
+    int nodeCount = trenuri.count();
+    int foundNdx = 0;
+    for(int i = 0; i < nodeCount; i++)
+    {
+        QDomElement tren = trenuri.at(i).toElement();
+        if(this->isElementValid(tren))
+        {
+            this->updateElement(tren);
+            trainFound = true;
+            foundNdx = i;
+            break;
+        }
+
+    }
+
+    if(this->incorectCommand)
+    {
+        this->resultCommand.result = "Comanda este invalida. Va rugam sa transmiteti o comanda cu toate argumentele valide.";
+        this->resultCommand.size_result = this->resultCommand.result.size();
+        return this->resultCommand;
+    }
+
+    if(trainFound)
+    {
+        document.firstChild().firstChild().firstChild().replaceChild(tren, trenuri.at(foundNdx));
+        pthread_mutex_lock(&this->writeMutex);
+        xmlFile.writeDocumentOnDisk(document);
+        pthread_mutex_unlock(&this->writeMutex);
+        trainFound = true;
+        this->resultCommand.result = "Trenul " + this->trainID + " a fost actualizat cu o intarziere de " + to_string(this->delay / 60) + " minute.\n";
+        this->resultCommand.size_result = this->resultCommand.result.size();
+    }
+    else
+    {
+        this->resultCommand.result = "Trenul " + this->trainID + " nu a fost gasit.\n";
+        this->resultCommand.size_result = this->resultCommand.result.size();
+    }
     return this->resultCommand;
+}
+
+void UpdateTrain::updateElement(QDomElement& tren)
+{
+    QDomElement trasa = tren.firstChild().firstChild().toElement();
+    QDomNodeList elementTrasaList = trasa.childNodes();
+    int countElTrasa = elementTrasaList.count();
+    string tra = trasa.tagName().toStdString();
+
+    int i = 0, stopIndex = countElTrasa;
+
+    if(this->targetSFlag)
+    {
+        for(; i < countElTrasa; i++)
+        {
+            if(elementTrasaList.at(i).toElement().attribute("DenStaOrigine").toStdString() == this->targetStation)
+            {
+                break;
+            }
+        }
+    }
+
+    if(this->stopStationFlag)
+    {
+        for(; stopIndex >= 0; stopIndex--)
+        {
+            if(elementTrasaList.at(stopIndex).toElement().attribute("DenStaOrigine").toStdString() == this->stopStation)
+            {
+                break;
+            }
+        }
+    }
+
+    if(i > stopIndex)
+    {
+        this->incorectCommand = true;
+    }
+
+    for(; i <= stopIndex; i++)
+    {
+        if(i == countElTrasa)
+            break;
+
+        QDomElement elTrasa = elementTrasaList.at(i).toElement();
+        if(elTrasa.toElement().tagName().toStdString() != "ElementTrasa")
+            continue;
+
+        elTrasa.setAttribute("Ajustari", this->delay);
+        string atr = elTrasa.attribute("Ajustari").toStdString();
+        string st = elTrasa.attribute("DenStaOrigine").toStdString();
+        tren.firstChild().firstChild().toDocument().replaceChild(elTrasa, elementTrasaList.at(i));
+    }
 }
 
 string  UpdateTrain::get_command() {
@@ -678,34 +783,26 @@ bool UpdateTrain::isCommandValid()
     return !this->incorectCommand;
 }
 
-TrainData UpdateTrain::toTrainData(QDomElement){return TrainData{false};}; // dummy override
-bool UpdateTrain::isElementValid(QDomElement){return false;}; // dummy override
+bool UpdateTrain::isElementValid(QDomElement &element){
+    if(!(element.tagName() == "Tren"))
+        return false;
 
+    string trainID;
+    trainID = element.attribute("CategorieTren").toStdString() + element.attribute("Numar").toStdString();
 
-/* CREATE Command */
-struct CommandResult CreateNewRoute::execute(XmlController &xmlFile){
-    cout << "Se execute comanda: Create new Route" << endl;
-    return this->resultCommand;
-}
+    if(trainID != this->trainID)
+        return false;
 
-string  CreateNewRoute::get_command() {
-    return this->command_t;
-}
+    return true;
+}; // dummy override
 
-bool CreateNewRoute::isCommandValid()
-{
-    return !this->incorectCommand;
-}
+TrainData UpdateTrain::toTrainData(QDomElement&){return TrainData{false};}; // dummy override
 
-TrainData CreateNewRoute::toTrainData(QDomElement){return TrainData{false};}; // dummy override
-bool CreateNewRoute::isElementValid(QDomElement){return false;}; // dummy override
-
-
+/* EXIT COMMAND */
 struct CommandResult ExitCommand::execute(XmlController &xmlFile){
     cout << "Se execute comanda: Exit connection" << endl;
     this->resultCommand.result.assign("EXIT");
-    this->resultCommand.size_result = 4;
-    this->resultCommand.result[4] = '\0';
+    this->resultCommand.size_result = this->resultCommand.result.size();
     return this->resultCommand;
 }
 
@@ -718,10 +815,11 @@ bool ExitCommand::isCommandValid()
     return !this->incorectCommand;
 }
 
-TrainData ExitCommand::toTrainData(QDomElement){return TrainData{false};}; // dummy override
-bool ExitCommand::isElementValid(QDomElement){return false;}; // dummy override
+TrainData ExitCommand::toTrainData(QDomElement&){return TrainData{false};}; // dummy override
+bool ExitCommand::isElementValid(QDomElement&){return false;}; // dummy override
 
 
+/* UNRECOGNIZED COMMAND */
 string  UnRecognizedCommand::get_command() {
     return this->command_t;
 }
@@ -738,8 +836,8 @@ bool UnRecognizedCommand::isCommandValid()
     return !this->incorectCommand;
 }
 
-TrainData UnRecognizedCommand::toTrainData(QDomElement){return TrainData{false};}; // dummy override
-bool UnRecognizedCommand::isElementValid(QDomElement){return false;}; // dummy override
+TrainData UnRecognizedCommand::toTrainData(QDomElement&){return TrainData{false};}; // dummy override
+bool UnRecognizedCommand::isElementValid(QDomElement&){return false;}; // dummy override
 
 
 // Train Data
@@ -776,4 +874,112 @@ TrainData::TrainData(bool invalid)
 bool TrainData::isValid()
 {
     return this->valid;
+}
+
+const string TrainData::toDeparturesString()
+{
+    /* It will represent a row in a table */
+    string row;
+    row += "| ";
+    row += centerContent(this->numeTren, 10) += " | ";
+    row += centerContent(this->statieP, 30) += " | ";
+    row += centerContent(this->statieD, 30) += "  | ";
+    row += centerContent(secondsToHourMinutes(this->timpPlecareP), 15) += " | ";
+    row += centerContent(secondsToMinutes(this->intarziereP), 15) += " | ";
+    row += centerContent(secondsToHourMinutes(this->timpSosireD), 15) += " | ";
+    row += centerContent(secondsToMinutes(this->intarziereD), 15) += " |\n";
+   return row;
+}
+
+const string TrainData::toArrivalsString()
+{
+    /* It will represent a row in a table */
+    string row;
+    row += "| ";
+    row += centerContent(this->numeTren, 10) += " | ";
+    row += centerContent(this->statieN, 30) += " | ";
+    row += centerContent(this->statieD, 30) += "  | ";
+    row += centerContent(secondsToHourMinutes(this->timpSosireN), 15) += " | ";
+    row += centerContent(secondsToMinutes(this->intarziereN), 15) += " | ";
+    row += centerContent(secondsToHourMinutes(this->timpSosireD), 15) += " | ";
+    row += centerContent(secondsToMinutes(this->intarziereD), 15) += " |\n";
+   return row;
+}
+
+string centerContent(const string s, const int width) {
+    /* Centers te content of table header */
+    stringstream ss, spaces;
+    int padding = width - s.size();// count excess room to pad
+    for(int i=0; i<padding/2; ++i)
+        spaces << " ";
+
+    ss << spaces.str() << s << spaces.str();    // format with padding
+    if(padding>0 && padding%2!=0)               // if odd #, add 1 space
+        ss << " ";
+    return ss.str();
+}
+
+string secondsToHourMinutes(const unsigned int seconds)
+{
+    /* converts seconds to HH:MM format */
+    stringstream format;
+    format << (int)(seconds / 3600) << ":" << (int)((seconds % 3600) / 60);
+    return format.str();
+}
+
+string secondsToMinutes(const unsigned int seconds)
+{
+    /* convers seconds to MM format */
+    stringstream format;
+    format << (int)(seconds / 60);
+    return format.str();
+}
+
+
+struct CommandResult toTableDepartures(vector<TrainData>&trainInfo)
+{
+    /* table header departures
+        Tren |  Statie Plecare | Statie Destinatie | OraPP | IntarziereP | OraSF | IntarziereF
+    */
+    struct CommandResult resultCommand;
+    resultCommand.result += "\n| ";
+    resultCommand.result += centerContent("Tren", 10) += " | ";
+    resultCommand.result += centerContent("Statie Plecare", 30) += " | ";
+    resultCommand.result += centerContent("Statia Destinatie", 30) += " | ";
+    resultCommand.result += centerContent("OraP", 15) += " | ";
+    resultCommand.result += centerContent("IntarziereP", 15) += " | ";
+    resultCommand.result += centerContent("OraSF", 15) += " | ";
+    resultCommand.result += centerContent("IntarziereF", 15) += " |\n";
+
+    for(auto& train : trainInfo)
+    {
+        resultCommand.result += train.toDeparturesString();
+    }
+
+    resultCommand.size_result = resultCommand.result.size();
+    return resultCommand;
+}
+
+struct CommandResult toTableArrivals(vector<TrainData>&trainInfo)
+{
+    /* table header
+        Tren |  Statie Sosiri | Statie Finala | OraSP | IntarziereP | OraSF | IntarziereF
+    */
+    struct CommandResult resultCommand;
+    resultCommand.result += "\n| ";
+    resultCommand.result += centerContent("Tren", 10) += " | ";
+    resultCommand.result += centerContent("Statie Sosiri", 30) += " | ";
+    resultCommand.result += centerContent("Statie Finala", 30) += " | ";
+    resultCommand.result += centerContent("OraS", 15) += " | ";
+    resultCommand.result += centerContent("IntarziereS", 15) += " | ";
+    resultCommand.result += centerContent("OraSF", 15) += " | ";
+    resultCommand.result += centerContent("IntarziereF", 15) += " |\n";
+
+    for(auto& train : trainInfo)
+    {
+        resultCommand.result += train.toArrivalsString();
+    }
+
+    resultCommand.size_result = resultCommand.result.size();
+    return resultCommand;
 }

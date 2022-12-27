@@ -8,7 +8,7 @@
 #include <iostream>
 
 
-Command* CommandFactory::create_command(char *command, int sd) {
+Command* CommandFactory::create_command(char *command, int sd, pthread_mutex_t &mutex) {
     string commandS;
     for(int i = 0; command[i] != '-' && command[i] != '\0'; i++)
         commandS += command[i];
@@ -25,22 +25,14 @@ Command* CommandFactory::create_command(char *command, int sd) {
     else if(commandS == "DEPARTURES"){
         return new GetDepartures(command, sd);
     }
-    else if(commandS == "CREATE"){
-        return new CreateNewRoute(command, sd);
-    }
     else if(commandS == "UPDATE"){
-        return new UpdateTrain(command, sd);
+        return new UpdateTrain(command, sd, mutex);
     }
     else if(strcmp(command, "EXIT") == 0)
     {
         return new ExitCommand(command, sd);
     }
     else{
-        char* unrec_com = static_cast<char*>(malloc(44));
-        strcpy(unrec_com, "Comanda gresita ! Va rugam incercati din nou");
-        unrec_com[44] = '\0';
-        Command* unrec = new UnRecognizedCommand(unrec_com, sd);
-        free(unrec_com);
-        return unrec;
+        return new UnRecognizedCommand("Comanda gresita ! Va rugam incercati din nou", sd);
     }
 }

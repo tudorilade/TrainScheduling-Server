@@ -17,7 +17,6 @@
 
 using namespace std;
 
-
 class ClientController{
 
 protected:
@@ -25,6 +24,7 @@ protected:
     struct sockaddr_in from {};   // client info
     int sd = -1, on = 1;
     ThreadFactory thread_factory {};
+    pthread_mutex_t mlock=PTHREAD_MUTEX_INITIALIZER;
 
 public:
     ClientController() = default;

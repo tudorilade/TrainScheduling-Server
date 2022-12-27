@@ -4,7 +4,8 @@
 #include "requests_controller.h"
 #include "../../CommandControl/CommandControlManager/command_control_manager.h"
 #include "../../CommandControl/CommandControl/command_factory.h"
-#include "../../CommandControl/CommandControl/command_ABC.h"
+
+pthread_mutex_t writeXmlLock=PTHREAD_MUTEX_INITIALIZER;
 
 using namespace std;
 
@@ -54,7 +55,6 @@ void RequestsController::handle_request(void *arg) {
     int status = 1;
     XmlController xmlFile;
     CommandManager manager {xmlFile};
-
     tdL= *((struct thData*)arg);
     manager.ManageCommands();
     while( connection )
@@ -74,7 +74,7 @@ void RequestsController::handle_request(void *arg) {
         }
         this->message_to_upper(in_msg); // upper just ARRIVALS - DEPARTURES etc.
         printf ("\n[Thread %d]A fost primita comanda: %s", tdL.idThread, in_msg);
-        Command* comm = CommandFactory::create_command(in_msg, tdL.client);
+        Command* comm = CommandFactory::create_command(in_msg, tdL.client, writeXmlLock);
         manager.QueueCommands(comm);
         if(check_close_connection_request(in_msg) == 0){
             connection = 0; // CLOSING CLIENT CONNECTION
