@@ -109,6 +109,23 @@ public:
 };
 
 
+class ManCommand : public Command{
+    /* Manual class that shows details about commands */
+private:
+    string manCommand;
+    bool arrivalsComm = false, departuresComm = false, updateComm = false;
+public:
+    ManCommand(const char*, int);
+    ManCommand() = default;
+    ~ManCommand() = default;
+    struct CommandResult execute(XmlController&) override;
+    string get_command() override;
+    bool isCommandValid() override;
+    TrainData toTrainData(QDomElement&) override;
+    bool isElementValid(QDomElement&) override;
+};
+
+
 // Utils functions
 
 int checkIfCorrectHourArgument(char*);

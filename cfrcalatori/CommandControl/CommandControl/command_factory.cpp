@@ -28,6 +28,9 @@ Command* CommandFactory::create_command(char *command, int sd, pthread_mutex_t &
     else if(commandS == "UPDATE"){
         return new UpdateTrain(command, sd, mutex);
     }
+    else if(commandS == "MAN"){
+        return new ManCommand(command, sd);
+    }
     else if(strcmp(command, "EXIT") == 0)
     {
         return new ExitCommand(command, sd);

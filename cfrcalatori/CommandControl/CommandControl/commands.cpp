@@ -840,6 +840,184 @@ TrainData UnRecognizedCommand::toTrainData(QDomElement&){return TrainData{false}
 bool UnRecognizedCommand::isElementValid(QDomElement&){return false;}; // dummy override
 
 
+/* Man Command */
+ManCommand::ManCommand(const char* command, int sd) : Command(command, sd)
+{
+    int i = 0, j = 0, k = 0;
+
+    if(checkIfCommandExists(command, i, j) != 0)
+    {
+        this->incorectCommand = true;
+        return;
+    }
+
+    this->manCommand.assign(command, i, (size_t)(j - i - 1));
+
+    if(manCommand != "MAN")
+    {
+        this->incorectCommand = true;
+        return;
+    }
+
+    bool end = false;
+    char* flag = 0;
+    char* arg = 0;
+
+    for(i = j; command[i] != '\0'; i++)
+    {
+        j = 0; k = 0;
+        removeBlankSpaces(command, i, end);
+        if(end){break;}
+
+        for(j = i; command[j] != ' '; j++); // get the length of the flag
+        flag = (char*)malloc(j-i+1); // allocate memory of it
+        strncpy(flag, command + i, j-i+1); // check the flag
+        flag[j-i] = '\0';
+
+        i = j; j = 0;
+        checkArgument(command, i, j, k);
+
+        if(j == -1)
+        {
+            // Nu s-a parsat un argument
+            this->incorectCommand = true;
+            free(flag);
+            break;
+        }
+        arg = (char*)malloc(j+1);
+        strncpy(arg, command + k - j + 1, j);
+        arg[j] = '\0';
+
+        if(strcmp(arg, "arrivals") == 0)
+        {
+            this->arrivalsComm = true;
+        }
+        else if(strcmp(arg, "departures") == 0)
+        {
+            this->departuresComm = true;
+        }
+        else if(strcmp(arg, "update") == 0)
+        {
+            this->updateComm = true;
+
+        }
+        else
+        {
+            this->incorectCommand = true;
+            free(flag); free(arg);
+            break;
+        }
+
+    }
+    free(flag); free(arg);
+}
+
+
+bool ManCommand::isCommandValid()
+{
+    return !this->incorectCommand;
+}
+
+string  ManCommand::get_command() {
+    return this->command_t;
+}
+
+TrainData ManCommand::toTrainData(QDomElement&){return TrainData{false};}; // dummy override
+bool ManCommand::isElementValid(QDomElement&){return false;}; // dummy override
+
+struct CommandResult ManCommand::execute(XmlController &xmlFile){
+    stringstream commandStream;
+    if(this->arrivalsComm)
+    {
+        commandStream << endl << endl << "NAME" << endl;
+        commandStream << "     ARRIVALS" << endl << endl;
+        commandStream << "ARGUMENTS" << endl;
+        commandStream << "-stationPS" << endl;
+        commandStream << "           Target station from where arrivals should be displayed." << endl;
+        commandStream << "-stationD" << endl;
+        commandStream << "           Destination station where trains that arrive in target station head." << endl;
+        commandStream << "-fromHour" << endl;
+        commandStream << "           Trains that arrive in the target station starting from given hour." << endl;
+        commandStream << "-toHour" << endl;
+        commandStream << "           Trains that arrive in the target station until give hour." << endl << endl;
+        commandStream << "DESCRIPTION" << endl;
+        commandStream << "            Arrivals command gives information about trains that are going to arrive in the station specified by the user." << endl;
+        commandStream << "            ARRIVALS and target station are mandatory arguments that must be past (ARRIVALS -stationPS given_station). If it not provided, the command will not work and appropiate message will be displayed." << endl;
+        commandStream << "            The other 3 arguments are optional. If none of them are supplied, default behavior is to display all trains that arrive in the station in 24h (from 00:00 to 23:59)." << endl;
+        commandStream << "            If -stationD is supplied, all arrivals from 00:00 to 23:59 that arrive in taret station and head towards destination station will be displayed." << endl;
+        commandStream << "            If -fromHour is supplied, then all trains that arrive in one hour from supplied hour will be displayed. If used in the combination with -stationD, will show only trains that meet the requirements for -fromHour and head towards destination station provided.";
+        commandStream << " The starting hour will be the given hour and not 00:00." << endl;
+        commandStream << "            If -toHour is supplied, then all the trains that arrive until given hour will be displayed starting from 00:00. If used in combination with -stationD, will show trains that meet the -toHour criteria and head towards destination station provided." << endl;
+        commandStream << "            The order of arguments does not count. ARRIVALS command is not case sensitive." << endl << endl;
+        commandStream << "EXAMPLE" << endl;
+        commandStream << "            arrivals -stationPS Amaradia -stationD Turceni -fromHour 11:30 -toHour 13:45" << endl << endl;
+        commandStream << "            All trains that arrive in station Amaradia and head towards Turceni from 11:30 to 13:45 will be displayed." << endl << endl;
+    }
+    else if(this->departuresComm)
+    {
+        commandStream << endl << endl << "NAME" << endl;
+        commandStream << "     DEPARTURES" << endl << endl;
+        commandStream << "ARGUMENTS" << endl;
+        commandStream << "-stationPS" << endl;
+        commandStream << "           Target station from where departures should be displayed." << endl;
+        commandStream << "-stationD" << endl;
+        commandStream << "           Destination station where trains that depart from target station head." << endl;
+        commandStream << "-fromHour" << endl;
+        commandStream << "           Trains that depart from the target station starting from given hour." << endl;
+        commandStream << "-toHour" << endl;
+        commandStream << "           Trains that depart from the target station until give hour." << endl << endl;
+        commandStream << "DESCRIPTION" << endl;
+        commandStream << "            Departures command gives information about trains that are going to depart in the station specified by the user." << endl;
+        commandStream << "            DEPARTURES and target station are mandatory arguments that must be past (DEPARTURES -stationPS given_station). If it not provided, the command will not work and appropiate message will be displayed." << endl;
+        commandStream << "            The other 3 arguments are optional. If none of them are supplied, default behavior is to display all trains that depart from the station in 24h (from 00:00 to 23:59)." << endl;
+        commandStream << "            If -stationD is supplied, all departs from 00:00 to 23:59 that depart from taret station and head towards destination station will be displayed." << endl;
+        commandStream << "            If -fromHour is supplied, then all trains that arrive in one hour from supplied hour will be displayed. If used in the combination with -stationD, will show only trains that meet the requirements for -fromHour and head towards destination station provided.";
+        commandStream << " The starting hour will be the given hour and not 00:00." << endl;
+        commandStream << "            If -toHour is supplied, then all the trains that depart until given hour will be displayed starting from 00:00. If used in combination with -stationD, will show trains that meet the -toHour criteria and head towards destination station provided." << endl;
+        commandStream << "            The order of arguments does not count. ARRIVALS command is not case sensitive." << endl << endl;
+        commandStream << "EXAMPLE" << endl;
+        commandStream << "            departures -stationPS Amaradia -stationD Turceni -fromHour 11:30 -toHour 13:45" << endl << endl;
+        commandStream << "            All trains that departs from station Amaradia and head towards Turceni from 11:30 to 13:45 will be displayed." << endl << endl;
+    }
+    else if(this->updateComm)
+    {
+        commandStream << endl << endl << "NAME" << endl;
+        commandStream << "     UPDATE" << endl << endl;
+        commandStream << "ARGUMENTS" << endl;
+        commandStream << "-train" << endl;
+        commandStream << "           Target train to which delay will be added." << endl;
+        commandStream << "-delay" << endl;
+        commandStream << "           The delay for the target train. It is expressed in minutes. Delay of over 24 hours is not accepted." << endl;
+        commandStream << "-fromStation" << endl;
+        commandStream << "           The delay will be updated for the given train starting with given station until the end." << endl;
+        commandStream << "-toStation" << endl;
+        commandStream << "           The delay will be updated for the given train form the starting station until the given station." << endl << endl;
+        commandStream << "DESCRIPTION" << endl;
+        commandStream << "            UPDATE command updates the delay of the target train." << endl;
+        commandStream << "            UPDATE, -train and -delay argument are mandatory that must be past (UPDATE -train R1000 -delay 1). If it not provided, the command will not work and appropiate message will be displayed." << endl;
+        commandStream << "            The other 2 arguments are optional. If none of them are supplied, default behavior is to update the delay of the given train from the departure station until the destination with given delay." << endl;
+        commandStream << "            If -fromStation is supplied, delay will be updated for the given train starting with given station until the final destination." << endl;
+        commandStream << "            If -toStation is supplied, then the delay will be updated for the given train starting with departure station until given station."<< endl;
+        commandStream << "            If -fromStation and -toStation are both used, the delay will be updated -fromStation until -toStation." << endl << endl;
+        commandStream << "EXAMPLE" << endl;
+        commandStream << "            UPDATE -train R2872 -delay 10 -fromStation Amaradia -toStation Plopşoru." << endl << endl;
+        commandStream << "            The train R2872 will be updated with a delay of 10 minutes starting from Amaradia to Plopşoru station." << endl;
+        commandStream << "            UPDATE -train R2872 -delay 5 -fromStation Amaradia -toStation Amaradia." << endl << endl;
+        commandStream << "            The train R2872 will be updated with a delay of 10 minutes only for Amaradia station. If -fromStation is after -toStation, the command will be marked as invalid and appropiate message will be sent." << endl;
+        commandStream << "            UPDATE -train R2872 -delay 5 " << endl << endl;
+        commandStream << "            The entire route of R2872 will be updated with a delay of 5 minutes." << endl << endl;
+    }
+    else if(this->incorectCommand)
+    {
+        commandStream << "Comanda invalida! Va rugam incercati din nou!" << endl;
+    }
+
+    this->resultCommand.result = commandStream.str();
+    this->resultCommand.size_result = this->resultCommand.result.size();
+    return this->resultCommand;
+}
+
+
 // Train Data
 TrainData::TrainData(
         string numeTren, string statieP, string statieN, string statieD,
