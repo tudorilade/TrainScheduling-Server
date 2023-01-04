@@ -1,11 +1,11 @@
 # Train Scheduling App
----
+
 ## Introduction
----
+
 Train Scheduling is a networking project I had to complete for Networking course. This is a connection-oriented client-server app where multiple clients can connect
 to server and perform commands concurrently. For serving multiple clients at the same time, I designed a multithreaded server.
 ## Implementation details
----
+
 A client can connect to a server via port 2049 on localhost. Client can send the following commands:
 - UPDATE -train <id> -delay <minutes> -fromStation <station_name> -toStation <station_name>
 - ARRIVALS -stationPS <station_name> -stationD <station_name> -fromHour HH:MM -toHour HH:MM
