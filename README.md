@@ -7,9 +7,9 @@ to server and perform commands concurrently. For serving multiple clients at the
 ## Implementation details
 
 A client can connect to a server via port 2049 on localhost. Client can send the following commands:
-- UPDATE -train <id> -delay <minutes> -fromStation <station_name> -toStation <station_name>
-- ARRIVALS -stationPS <station_name> -stationD <station_name> -fromHour HH:MM -toHour HH:MM
-- DEPARTURES -stationPS <station_name> -stationD <station_name> -fromHour HH:MM -toHour HH:MM
+- ```C++ UPDATE -train <id> -delay <minutes> -fromStation <station_name> -toStation <station_name>```
+- ```C++ ARRIVALS -stationPS <station_name> -stationD <station_name> -fromHour HH:MM -toHour HH:MM```
+- ```C++ DEPARTURES -stationPS <station_name> -stationD <station_name> -fromHour HH:MM -toHour HH:MM```
 
 The commands are implemented with the help of Command Design Pattern and requests sent by a client are handled with the help of a Command Queue Pattern. 
 ## Requirements
