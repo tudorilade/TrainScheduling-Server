@@ -59,7 +59,6 @@ void CommandManager::QueueCommands(Command* comm) {
 }
 
 void CommandManager::executeCommands(Command * command) {
-
     struct CommandResult res = command->execute(this->xmlFile);
     char *out_msg = static_cast<char *>(malloc(res.size_result+1));
     strncpy(out_msg, res.result.c_str(), res.size_result);
@@ -69,7 +68,6 @@ void CommandManager::executeCommands(Command * command) {
         running = false;
         close(command->get_client_sd());
     }
-
     free(out_msg);
 
 }

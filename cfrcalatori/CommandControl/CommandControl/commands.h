@@ -37,6 +37,7 @@ public:
     void getTrainsInfo(vector<TrainData>&, XmlController&);
 };
 
+
 class GetArrivals : public GetRequests{
 public:
     GetArrivals(const char*, int);

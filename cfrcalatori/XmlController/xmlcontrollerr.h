@@ -7,11 +7,6 @@
 
 using namespace std;
 
-struct NewTrainNode
-{
-    /* Inserting New Train - to be implemented if enough time*/
-};
-
 class XmlController
 {
 /*

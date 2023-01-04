@@ -103,6 +103,10 @@ void checkArgument(const char* command, int& i, int& j, int& k)
         {
             i++; j++;
         }
+        else if(command[i] == '-' && command[i-1] != ' ')
+        {
+            i++; j++;
+        }
         else if(command[i] == '\0' || command[i] == '-')
         {
             j--;
@@ -932,14 +936,14 @@ struct CommandResult ManCommand::execute(XmlController &xmlFile){
         commandStream << endl << endl << "NAME" << endl;
         commandStream << "     ARRIVALS" << endl << endl;
         commandStream << "ARGUMENTS" << endl;
-        commandStream << "-stationPS" << endl;
-        commandStream << "           Target station from where arrivals should be displayed." << endl;
-        commandStream << "-stationD" << endl;
-        commandStream << "           Destination station where trains that arrive in target station head." << endl;
-        commandStream << "-fromHour" << endl;
-        commandStream << "           Trains that arrive in the target station starting from given hour." << endl;
-        commandStream << "-toHour" << endl;
-        commandStream << "           Trains that arrive in the target station until give hour." << endl << endl;
+        commandStream << "            -stationPS" << endl;
+        commandStream << "                  Target station from where arrivals should be displayed." << endl;
+        commandStream << "            -stationD" << endl;
+        commandStream << "                  Destination station where trains that arrive in target station head." << endl;
+        commandStream << "            -fromHour" << endl;
+        commandStream << "                  Trains that arrive in the target station starting from given hour." << endl;
+        commandStream << "            -toHour" << endl;
+        commandStream << "                  Trains that arrive in the target station until give hour." << endl << endl;
         commandStream << "DESCRIPTION" << endl;
         commandStream << "            Arrivals command gives information about trains that are going to arrive in the station specified by the user." << endl;
         commandStream << "            ARRIVALS and target station are mandatory arguments that must be past (ARRIVALS -stationPS given_station). If it not provided, the command will not work and appropiate message will be displayed." << endl;
@@ -958,14 +962,14 @@ struct CommandResult ManCommand::execute(XmlController &xmlFile){
         commandStream << endl << endl << "NAME" << endl;
         commandStream << "     DEPARTURES" << endl << endl;
         commandStream << "ARGUMENTS" << endl;
-        commandStream << "-stationPS" << endl;
-        commandStream << "           Target station from where departures should be displayed." << endl;
-        commandStream << "-stationD" << endl;
-        commandStream << "           Destination station where trains that depart from target station head." << endl;
-        commandStream << "-fromHour" << endl;
-        commandStream << "           Trains that depart from the target station starting from given hour." << endl;
-        commandStream << "-toHour" << endl;
-        commandStream << "           Trains that depart from the target station until give hour." << endl << endl;
+        commandStream << "            -stationPS" << endl;
+        commandStream << "                  Target station from where departures should be displayed." << endl;
+        commandStream << "            -stationD" << endl;
+        commandStream << "                  Destination station where trains that depart from target station head." << endl;
+        commandStream << "            -fromHour" << endl;
+        commandStream << "                  Trains that depart from the target station starting from given hour." << endl;
+        commandStream << "            -toHour" << endl;
+        commandStream << "                  Trains that depart from the target station until give hour." << endl << endl;
         commandStream << "DESCRIPTION" << endl;
         commandStream << "            Departures command gives information about trains that are going to depart in the station specified by the user." << endl;
         commandStream << "            DEPARTURES and target station are mandatory arguments that must be past (DEPARTURES -stationPS given_station). If it not provided, the command will not work and appropiate message will be displayed." << endl;
@@ -984,14 +988,14 @@ struct CommandResult ManCommand::execute(XmlController &xmlFile){
         commandStream << endl << endl << "NAME" << endl;
         commandStream << "     UPDATE" << endl << endl;
         commandStream << "ARGUMENTS" << endl;
-        commandStream << "-train" << endl;
-        commandStream << "           Target train to which delay will be added." << endl;
-        commandStream << "-delay" << endl;
-        commandStream << "           The delay for the target train. It is expressed in minutes. Delay of over 24 hours is not accepted." << endl;
-        commandStream << "-fromStation" << endl;
-        commandStream << "           The delay will be updated for the given train starting with given station until the end." << endl;
-        commandStream << "-toStation" << endl;
-        commandStream << "           The delay will be updated for the given train form the starting station until the given station." << endl << endl;
+        commandStream << "            -train" << endl;
+        commandStream << "                  Target train to which delay will be added." << endl;
+        commandStream << "            -delay" << endl;
+        commandStream << "                  The delay for the target train. It is expressed in minutes. Delay of over 24 hours is not accepted." << endl;
+        commandStream << "            -fromStation" << endl;
+        commandStream << "                  The delay will be updated for the given train starting with given station until the end." << endl;
+        commandStream << "            -toStation" << endl;
+        commandStream << "                  The delay will be updated for the given train form the starting station until the given station." << endl << endl;
         commandStream << "DESCRIPTION" << endl;
         commandStream << "            UPDATE command updates the delay of the target train." << endl;
         commandStream << "            UPDATE, -train and -delay argument are mandatory that must be past (UPDATE -train R1000 -delay 1). If it not provided, the command will not work and appropiate message will be displayed." << endl;

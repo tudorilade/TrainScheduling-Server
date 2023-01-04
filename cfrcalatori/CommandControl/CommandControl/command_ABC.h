@@ -16,7 +16,7 @@ using namespace std;
 class TrainData
 {
 /*
-    Struct containing needed info about a train
+    Class containing needed info about a train
 */
 private:
     string numeTren;
@@ -35,7 +35,7 @@ private:
     unsigned int timpPlecareP; // departure time at stationP
     unsigned int timpPlecareD; // departure time at stationD
     unsigned int timpPlecareN; // departure time at next station
-    bool valid = true; // when statieD provided and we found same statieP but with different statieD than provided
+    bool valid = true; // when statieD is provided and we found same statieP but with different statieD than provided
 
 public:
     TrainData(
