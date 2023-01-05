@@ -68,7 +68,7 @@ private:
     string stopStation; // station where the delay propagation should be stopped
     string updateCommand;
     string trainID;
-    unsigned int delay = 0;
+    int delay = 0;
     size_t sizeCommand = 12;
     size_t sizeStation = 0;
     size_t sizeTrainID = 0;
@@ -83,6 +83,25 @@ public:
     bool isElementValid(QDomElement&) override;
     void updateElement(QDomElement&);
 
+};
+
+
+class TrainRoute: public Command
+{
+private:
+    string trainID;
+    string scheduleCommand;
+    size_t sizeCommand;
+    size_t sizeTrainID;
+    bool trainIDFlag = false;
+public:
+    TrainRoute(const char* command, int sd);
+    struct CommandResult execute(XmlController&) override;
+    string get_command() override;
+    bool isCommandValid() override;
+    TrainData toTrainData(QDomElement&) override;
+    bool isElementValid(QDomElement&) override;
+    void getTrainRoute(QDomElement&);
 };
 
 
@@ -114,7 +133,7 @@ class ManCommand : public Command{
     /* Manual class that shows details about commands */
 private:
     string manCommand;
-    bool arrivalsComm = false, departuresComm = false, updateComm = false;
+    bool arrivalsComm = false, departuresComm = false, updateComm = false, routeComm = false;
 public:
     ManCommand(const char*, int);
     ManCommand() = default;
@@ -132,8 +151,8 @@ public:
 int checkIfCorrectHourArgument(char*);
 string formatContent(const string, const int);
 string centerContent(const string, const int);
-string secondsToHourMinutes(const unsigned int);
-string secondsToMinutes(const unsigned int);
+string secondsToHourMinutes(const int);
+string secondsToMinutes(const int);
 struct CommandResult toTableDepartures(vector<TrainData>&);
 struct CommandResult toTableArrivals(vector<TrainData>&);
 

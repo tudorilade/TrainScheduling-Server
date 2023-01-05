@@ -23,26 +23,26 @@ private:
     string statieP; // arrival/departure station
     string statieN; // next station
     string statieD; // destination. Last station if not provided
-    unsigned int intarziereP; // delay arrival/departure
-    unsigned int intarziereD; // delay at final destination
-    unsigned int intarziereN; // delay at next station
-    unsigned int timpStationareP; // station time at arrival/departure station
-    unsigned int timpStationareD; // station time at final destination station
-    unsigned int timpStationareN; // station time at next station
-    unsigned int timpSosireP; // arrival time at stationP
-    unsigned int timpSosireD; // arrival time at stattionD
-    unsigned int timpSosireN; // arrival time at next station
-    unsigned int timpPlecareP; // departure time at stationP
-    unsigned int timpPlecareD; // departure time at stationD
-    unsigned int timpPlecareN; // departure time at next station
+    int intarziereP; // delay arrival/departure
+    int intarziereD; // delay at final destination
+    int intarziereN; // delay at next station
+    int timpStationareP; // station time at arrival/departure station
+    int timpStationareD; // station time at final destination station
+    int timpStationareN; // station time at next station
+    int timpSosireP; // arrival time at stationP
+    int timpSosireD; // arrival time at stattionD
+    int timpSosireN; // arrival time at next station
+    int timpPlecareP; // departure time at stationP
+    int timpPlecareD; // departure time at stationD
+    int timpPlecareN; // departure time at next station
     bool valid = true; // when statieD is provided and we found same statieP but with different statieD than provided
 
 public:
     TrainData(
-            string, string, string,string, unsigned int, unsigned int,
-            unsigned int, unsigned int, unsigned int, unsigned int,
-            unsigned int, unsigned int, unsigned int, unsigned int,
-            unsigned int, unsigned int
+            string, string, string, string, int, int, int,
+            int, int, int,
+            int, int, int, int,
+            int, int
     );
     TrainData(bool);
     TrainData() = default;

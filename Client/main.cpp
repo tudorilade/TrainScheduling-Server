@@ -82,7 +82,7 @@ int main (int argc, char *argv[])
 
         read(sd, &length, sizeof(size_t));
 
-        msg = (char*)malloc(length);
+        msg = (char*)malloc(length + 1);
 
         if ((read (sd, msg, length)) <= 0)
         {

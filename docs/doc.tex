@@ -104,7 +104,7 @@ Retrieving data commands will consist in GET requests, as follows:
 
 \begin{enumerate}
     \item Client type 1 $\rightarrow$ DEPARTURES: Any connected client can ask for information about departures of trains in the current day.
-    \item Client type 2 $\rightarrow$ ARRIVALS: Any connected client can ask for information about arrivals of trains from the following hour or current day or for a given train if ID is provided.
+    \item Client type 2 $\rightarrow$ ARRIVALS: Any connected client can ask for information about arrivals of trains from the following hour or current day.
 \end{enumerate}
 
  For ARRIVALS/DEPARTURES commands, I will implement four flags: 
@@ -154,6 +154,14 @@ The format of ARRIVALS/DEPARTURES command is:
 If \textbf{-fromStation} and \textbf{-toStation} are not specified, the delay time will be adjusted to the entire train route. Any combination these two flags results in an adjustment only between specified stations. If station specified by  \textbf{-toStation} is located before \textbf{-fromStation}, the command will be considered invalid.
 
 \textbf{UPDATE} command is thread safe.
+
+From the \textbf{GET Requests} family, I implemented a \textbf{ROUTE} command which has the main responsability to display the train route.
+\textbf{MAN} command has the following the format:  
+\begin{gather*}
+    \textbf{ROUTE} \;\;-train <train\_id>
+\end{gather*}
+
+\textbf{-train} - displays the train route of the train ID supplied.
 
 The server has implemented a manual command which provides information about aforementioned commands and some examples how them should be used.
 
