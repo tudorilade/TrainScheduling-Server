@@ -3,7 +3,7 @@
 ## Introduction
 
 Train Scheduling is a networking project I had to complete for Networking course. This is a connection-oriented client-server app where multiple clients can connect
-to server and perform commands concurrently. For serving multiple clients at the same time, I designed a multithreaded server. See docs folder for full description of project's architecture.
+to server and perform commands concurrently. For serving multiple clients at the same time, I designed a multithreaded server. See **docs** folder for full description of project's architecture.
 ## Implementation details
 
 A client can connect to a server via port 2049 on localhost. Client can send the following commands:
